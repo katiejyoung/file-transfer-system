@@ -30,22 +30,26 @@ int main(int argc, char *argv[]) {
 
     char *fileIn; // File input string to incoming data
 
-    // Initiate Server
-    // Wait for connection
+    while (1) {
 
-    // Request username and password and validate
-    // validUserPass = getUserPass(argArray, usrIn); 
-    // while (!validUserPass) {
-    //     printf("Invalid user/password combination. Please try again.\n");
-    //     fflush(stdout);
-    //     validUserPass = getUserPass(argArray, usrIn);
-    // }
+        // Initiate Server
+        // Wait for connection
 
-    // If valid, request desired action
-    // User may opt to change directory or send a file
-    do {
-        printf("Current working directory: %s\nSend \'cd\' followed by a new path or enter \'sendfile\' to initiate file transmission.\n", cwd);
-        fflush(stdout); // Flush output
+        // Request username and password and validate
+        // validUserPass = getUserPass(argArray, usrIn); 
+        // while (!validUserPass) {
+        //     printf("Invalid user/password combination. Please try again.\n");
+        //     fflush(stdout);
+        //     validUserPass = getUserPass(argArray, usrIn);
+        // }
+
+        // If valid, request desired action
+        // User may opt to change directory or send a file
+
+        // Move this prompt to client when implemented
+        // printf("Current working directory: %s\nSend \'cd\' followed by a new path to change directory, \'-l\' to list CWD, or enter \'-g\' followed by a file to initiate file transmission.\n", cwd);
+        // fflush(stdout); // Flush output
+
         usrIn = getInput(); // Generate user input
         argCount = parseInput(argArray, usrIn); // Parse input into separate arguments
         if (strcmp(argArray[0], "cd") == 0) {
@@ -53,9 +57,21 @@ int main(int argc, char *argv[]) {
             changeDir(argArray, argCount); // Change directory
             cwd = getCWD(); // Update working directory value
         }
-    } while (strcmp(argArray[0], "sendfile") != 0);
-    
+        else if (strcmp(argArray[0], "-l") == 0) {
+            printf("Current working directory: %s\n", cwd); fflush(stdout); // Flush output
+        }
+        else if (strcmp(argArray[0], "-g") == 0) {
+            if (argCount < 2) {
+                printf("Error: invalid directory.\n"); fflush(stdout);
+            }
+        }
+        else {
+            printf("Error: Invalid command.\n"); fflush(stdout);
+        }
 
+        // Close connection
+    
+    }
 }
 
 // Reads user input from client
