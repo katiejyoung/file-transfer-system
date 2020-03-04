@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     while (1) {
 
         // Initiate Server
-        // Wait for connection
+        // Wait for TCP control connection
 
         // Request username and password and validate
         // validUserPass = getUserPass(argArray, usrIn); 
@@ -52,24 +52,33 @@ int main(int argc, char *argv[]) {
 
         usrIn = getInput(); // Generate user input
         argCount = parseInput(argArray, usrIn); // Parse input into separate arguments
-        if (strcmp(argArray[0], "cd") == 0) {
-            printf("Changing directory to: %s\n", argArray[1]); fflush(stdout);
-            changeDir(argArray, argCount); // Change directory
-            cwd = getCWD(); // Update working directory value
-        }
-        else if (strcmp(argArray[0], "-l") == 0) {
-            printf("Current working directory: %s\n", cwd); fflush(stdout); // Flush output
-        }
-        else if (strcmp(argArray[0], "-g") == 0) {
-            if (argCount < 2) {
-                printf("Error: invalid directory.\n"); fflush(stdout);
-            }
-        }
-        else {
+
+        if ((strcmp(argArray[0], "cd") && (strcmp(argArray[0], "-l") && (strcmp(argArray[0], "-g")) != 0) {
             printf("Error: Invalid command.\n"); fflush(stdout);
         }
+        else {
+            // Open data connection
+        
+            if (strcmp(argArray[0], "cd") == 0) {
+                printf("Changing directory to: %s\n", argArray[1]); fflush(stdout);
+                changeDir(argArray, argCount); // Change directory
+                cwd = getCWD(); // Update working directory value
+            }
+            else if (strcmp(argArray[0], "-l") == 0) {
+                printf("Current working directory: %s\n", cwd); fflush(stdout); // Flush output
+            }
+            else if (strcmp(argArray[0], "-g") == 0) {
+                if (argCount < 2) {
+                    printf("Error: invalid directory.\n"); fflush(stdout);
+                }
+                // If file exists, send file
+                // If file not found, send failure notice
+            }
 
-        // Close connection
+            // Close data connection
+        }
+
+        // Close TCP control connection
     
     }
 }
