@@ -16,14 +16,11 @@ char* getInput();
 int getUserPass(char* charArray[MAXARG], char input[MAXLINE]);
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
 void changeDir(char* charArray[MAXARG], int numArgs);
+char* getCWD();
 
 int main(int argc, char *argv[]) {
-    char cwd[MAXARG]; // Save current working directory to variable
-    char *CWD = &cwd[0];
-    if (getcwd(cwd, sizeof(cwd)) == NULL) {
-        perror("Directory error");
-        return 1;
-    }
+    char *cwd; // Save current working directory to variable
+    cwd = getCWD();
 
     int validUserPass = 0;
 
@@ -36,20 +33,28 @@ int main(int argc, char *argv[]) {
     // Initiate Server
     // Wait for connection
 
-    validUserPass = getUserPass(argArray, usrIn); // Request username and password
-    while (!validUserPass) {
-        printf("Invalid user/password combination. Please try again.\n");
-        fflush(stdout);
-        validUserPass = getUserPass(argArray, usrIn);
-    }
+    // Request username and password and validate
+    // validUserPass = getUserPass(argArray, usrIn); 
+    // while (!validUserPass) {
+    //     printf("Invalid user/password combination. Please try again.\n");
+    //     fflush(stdout);
+    //     validUserPass = getUserPass(argArray, usrIn);
+    // }
 
     // If valid, request desired action
     // User may opt to change directory or send a file
-    printf("Current working directory: %s\nSend \'cd\' followed by a new path or enter \'sendfile\' to initiate file transmission.\n", cwd);
-    fflush(stdout); // Flush output
-
-    // Loop until sendfile entered
-
+    do {
+        printf("Current working directory: %s\nSend \'cd\' followed by a new path or enter \'sendfile\' to initiate file transmission.\n", cwd);
+        fflush(stdout); // Flush output
+        usrIn = getInput(); // Generate user input
+        argCount = parseInput(argArray, usrIn); // Parse input into separate arguments
+        if (strcmp(argArray[0], "cd") == 0) {
+            printf("Changing directory to: %s\n", argArray[1]); fflush(stdout);
+            changeDir(argArray, argCount); // Change directory
+            cwd = getCWD(); // Update working directory value
+        }
+    } while (strcmp(argArray[0], "sendfile") != 0);
+    
 
 }
 
@@ -119,15 +124,27 @@ int parseInput(char* charArray[MAXARG], char input[MAXLINE]) {
 
 // Changes working directory to home or to specified path, if provided
 void changeDir(char* charArray[MAXARG], int numArgs) {
- 
     if (numArgs > 1) {
-        // Change to specified path
         if (chdir(charArray[1]) != 0) { // Check for failure to change directory
             perror("changeDir() failed.");
         }
     }
     else {
-        printf("No path specified.");
-        fflush(stdout); // Flush output
+        printf("No path specified.\n"); fflush(stdout); // Flush output
     }
+}
+
+char* getCWD() {
+    size_t bufLen = MAXLINE;
+    char* buffer = (char *)malloc(bufLen * sizeof(char));
+    memset(buffer, '\0', MAXLINE);
+
+    char newDir[MAXLINE];
+    if (getcwd(newDir, sizeof(newDir)) == NULL) {
+        perror("Directory error");
+    }
+
+    strcpy(buffer, newDir);
+
+    return buffer;
 }
