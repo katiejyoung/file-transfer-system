@@ -6,5 +6,5 @@
 Testing Machine: I SSH'd to the flip servers using Visual Studio Code for testing.
 
 Citations: 
-* The server program uses code from CS 344, Program 4
+* The server program uses code from CS 344, Programs 3 and 4
 * The client program uses code from our previous assignment in CS 372
