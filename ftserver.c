@@ -15,6 +15,7 @@ void acceptedConnection(int socketFD);
 int validateUserPass(int establishedConnectionFD);
 void getCommand(int establishedConnectionFD);
 char* getClientInput(int establishedConnectionFD);
+void sendToClient(char* charsToSend, int establishedConnectionFD);
 char* getCWD();
 void changeDir(char* charArray[MAXARG], int numArgs);
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
@@ -107,13 +108,11 @@ void getCommand(int establishedConnectionFD) {
 
     char *clientIn = getClientInput(establishedConnectionFD);
     int argCount = parseInput(argArray, clientIn);
-    printf("%s\n", clientIn); fflush(stdout);
 
     if (strcmp(argArray[0], "-l") == 0) {
         char *cwd = getCWD();
         strcat(cwd, "\n");
-        printf("Working directory: %s", cwd); fflush(stdout);
-        // int charsSent = send(establishedConnectionFD, cwd, sizeof(cwd), 0);
+        sendToClient(cwd, establishedConnectionFD);
     }
     else if (strcmp(argArray[0], "-g") == 0) {
         printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
@@ -144,6 +143,15 @@ char* getClientInput(int establishedConnectionFD) {
     buffer = &receiveChar[0];
 
     return buffer;
+}
+
+void sendToClient(char *charsToSend, int establishedConnectionFD) {
+    int charsSent;
+
+    charsSent = send(establishedConnectionFD, charsToSend, strlen(charsToSend), 0);
+    if (charsSent != strlen(charsToSend)) {
+        printf("Not all data delivered.\n"); fflush(stdout);
+    }
 }
 
 char* getCWD() {

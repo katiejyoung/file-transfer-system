@@ -116,12 +116,11 @@ public class FTClient {
             }
         } while (isValid == 0);
 
-        System.out.println(userMessage);
         clientOutput.println(userMessage);
 
         if (userMessage.contains("-l")) {
-            // serverMessage = getServerInput();
-            // System.out.println(serverMessage);
+            serverMessage = getServerInput();
+            System.out.println("Working directory: " + serverMessage);
             serverMessage = "";
         }
         else if (userMessage.contains("-g")) {
