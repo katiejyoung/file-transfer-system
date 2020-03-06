@@ -6,6 +6,7 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h> 
 
 #define MAXLINE 2000 // Maximum command length
 #define MAXARG 500 // Maximum number of commands
@@ -17,6 +18,7 @@ char* getClientInput(int establishedConnectionFD);
 char* getCWD();
 void changeDir(char* charArray[MAXARG], int numArgs);
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
+void transferFile(char* charArray[MAXARG], int establishedConnectionFD);
 
 int main(int argc, char *argv[]) {
     int portNumber;
@@ -104,21 +106,25 @@ void getCommand(int establishedConnectionFD) {
     printf("Retrieving client command...\n"); fflush(stdout);
 
     char *clientIn = getClientInput(establishedConnectionFD);
+    int argCount = parseInput(argArray, clientIn);
     printf("%s\n", clientIn); fflush(stdout);
 
-    if (strcmp(clientIn, "-l") == 0) {
+    if (strcmp(argArray[0], "-l") == 0) {
         char *cwd = getCWD();
-        printf("Working directory: %s\n", cwd); fflush(stdout);
+        strcat(cwd, "\n");
+        printf("Working directory: %s", cwd); fflush(stdout);
+        // int charsSent = send(establishedConnectionFD, cwd, sizeof(cwd), 0);
     }
-    else if (strcmp(clientIn, "-g") == 0) {
-        printf("Begin file transfer\n"); fflush(stdout);
+    else if (strcmp(argArray[0], "-g") == 0) {
+        printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
+        transferFile(argArray, establishedConnectionFD);
     }
-    else if (strstr(clientIn, "cd")) {
-        int argCount = parseInput(argArray, clientIn);
+    else if (strstr(argArray[0], "cd")) {
+        printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
         changeDir(argArray, argCount);
     }
     else {
-        printf("%s\n", clientIn); fflush(stdout);
+        printf("Invalid command.\n", clientIn); fflush(stdout);
     }
 }
 
@@ -182,4 +188,28 @@ int parseInput(char* charArray[MAXARG], char input[MAXLINE]) {
     }
 
     return argCount;
+}
+
+void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
+    FILE *plaintext;
+    // Open text file and check for open success
+	plaintext = fopen(charArray[1], "r");
+	if (plaintext == NULL) {
+		printf("Error: file not found\n"); fflush(stdout);
+	}
+    else {
+        printf("File found\n"); fflush(stdout);
+        //Find size of file
+        //Send file size to client
+        //Send line-by-line, using newline as end marker
+
+        // nread = getline(&b, &len, plaintext); // Read from plaintext file into buffer variable
+        // strcpy(plainText, buffer); // Save buffer value to plaintext variable
+        // memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer array
+
+        fclose(plaintext);
+    }
+    
+    
+    
 }

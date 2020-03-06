@@ -115,12 +115,14 @@ public class FTClient {
                 userMessage = "";
             }
         } while (isValid == 0);
-        
+
         System.out.println(userMessage);
         clientOutput.println(userMessage);
 
         if (userMessage.contains("-l")) {
-            System.out.println("Printing CWD...");
+            // serverMessage = getServerInput();
+            // System.out.println(serverMessage);
+            serverMessage = "";
         }
         else if (userMessage.contains("-g")) {
             System.out.println("Retrieving file...");
