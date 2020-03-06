@@ -12,6 +12,7 @@
 
 void acceptedConnection(int socketFD);
 int validateUserPass(int establishedConnectionFD);
+void getCommand(int establishedConnectionFD);
 char* getClientInput(int establishedConnectionFD);
 
 int main(int argc, char *argv[]) {
@@ -53,9 +54,7 @@ void acceptedConnection(int socketFD) {
     socklen_t sizeOfClientInfo;
     struct sockaddr_in clientAddress;
     int establishedConnectionFD;
-    int validUserPass, charsSent;
-    char *invalidUserPass = "invalid\n";
-    char *proceedConnection = "proceed\n";
+    int validUserPass;
     sizeOfClientInfo = sizeof(clientAddress); // Get the size of the address for the client that will connect
 
     while (1) {
@@ -67,17 +66,9 @@ void acceptedConnection(int socketFD) {
 
         do {
             validUserPass = validateUserPass(establishedConnectionFD);
-
-            if (!validUserPass) {
-                printf("Invalid credentials.\n"); fflush(stdout);
-                charsSent = send(establishedConnectionFD, invalidUserPass, sizeof(invalidUserPass), 0);
-            }
-            else {
-                printf("Valid credentials.\n"); fflush(stdout);
-                charsSent = send(establishedConnectionFD, proceedConnection, sizeof(proceedConnection), 0);
-                validUserPass = 1;
-            }
         } while (!validUserPass);
+
+        getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
         establishedConnectionFD = -1;
@@ -87,18 +78,25 @@ void acceptedConnection(int socketFD) {
 int validateUserPass(int establishedConnectionFD) {
     char uName[] = "Admin";
     char uPass[] = "monkeys3";
+    char *invalidUserPass = "invalid\n";
+    char *proceedConnection = "proceed\n";
     char *nameIn = getClientInput(establishedConnectionFD);
     char *passIn = getClientInput(establishedConnectionFD);
+    int charsSent;
 
     if ((strcmp(nameIn, uName) != 0) || (strcmp(passIn, uPass) != 0)) {
-        printf("%s, %s invalid.\n", nameIn, passIn); fflush(stdout);
+        charsSent = send(establishedConnectionFD, invalidUserPass, sizeof(invalidUserPass), 0);
         return 0;
     }
     else {
-        printf("%s, %s valid.\n", nameIn, passIn); fflush(stdout);
+        charsSent = send(establishedConnectionFD, proceedConnection, sizeof(proceedConnection), 0);
     }
 
     return 1;
+}
+
+void getCommand(int establishedConnectionFD) {
+    printf("Retrieving client command...\n");
 }
 
 // Reads user input from client

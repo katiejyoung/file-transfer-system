@@ -25,6 +25,7 @@ public class FTClient {
             clientInput = new BufferedReader(new InputStreamReader(System.in));
 
             getUserPass();
+            executeProg();
 
             clientOutput.close();
             serverInput.close();
@@ -39,10 +40,10 @@ public class FTClient {
 
     public void getUserPass() throws IOException {
         int validUserPass = 0;
-        System.out.println("Connected to server.");
+        System.out.println("Connected to server...\n");
 
         do {
-            System.out.println("Please enter your username and password");
+            System.out.println("Please enter your username and password.");
             System.out.print("Username: ");
             userName = getUserInput();
             System.out.print("Password: ");
@@ -95,6 +96,13 @@ public class FTClient {
                 return buildString.toString();
             }
         }
+    }
+
+    public void executeProg() throws IOException {
+        System.out.println("\n-------------------------------------------------------");
+        System.out.println("File Transfer Initiated");
+        System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
+        System.out.println("-------------------------------------------------------\n\n");
     }
         
 
