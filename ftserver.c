@@ -68,6 +68,7 @@ void acceptedConnection(int socketFD) {
             validUserPass = validateUserPass(establishedConnectionFD);
         } while (!validUserPass);
 
+        // while ((getchar()) != '\n'); // Clear input buffer
         getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
@@ -96,7 +97,21 @@ int validateUserPass(int establishedConnectionFD) {
 }
 
 void getCommand(int establishedConnectionFD) {
-    printf("Retrieving client command...\n");
+    printf("Retrieving client command...\n"); fflush(stdout);
+
+    // char *clientIn = getClientInput(establishedConnectionFD);
+    char *clientIn = "-l";
+    printf("%s\n", clientIn); fflush(stdout);
+
+    if (strcmp(clientIn, "-l") == 0) {
+        printf("List CWD\n"); fflush(stdout);
+    }
+    else if (strcmp(clientIn, "-g") == 0) {
+        printf("Begin file transfer\n"); fflush(stdout);
+    }
+    else {
+        printf("%s\n", clientIn); fflush(stdout);
+    }
 }
 
 // Reads user input from client
@@ -112,6 +127,5 @@ char* getClientInput(int establishedConnectionFD) {
 
     buffer[strcspn(buffer, "\n")] = 0;
 
-    // Return input string
     return buffer;
 }

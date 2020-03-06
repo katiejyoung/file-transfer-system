@@ -112,8 +112,20 @@ public class FTClient {
 
             if (isValid != 1) {
                 System.out.println("Command not found. Please try again.");
+                userMessage = "";
             }
         } while (isValid == 0);
+
+        // clientOutput.println(userMessage);
+
+        if (userMessage.contains("-l")) {
+            System.out.println("Printing CWD...");
+        }
+        else if (userMessage.contains("-g")) {
+            System.out.println("Retrieving file...");
+        }
+
+        userMessage = "";
     }
 
     public int validateCommand(String command) throws IOException {
