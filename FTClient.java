@@ -20,6 +20,8 @@ public class FTClient {
     public FTClient(String host, int port) {
         try {
             clientSocket = new Socket(host, port);
+            System.out.println("Connected to server...\n");
+
             clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
             serverInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             clientInput = new BufferedReader(new InputStreamReader(System.in));
@@ -40,7 +42,6 @@ public class FTClient {
 
     public void getUserPass() throws IOException {
         int validUserPass = 0;
-        System.out.println("Connected to server...\n");
 
         do {
             System.out.println("Please enter your username and password.");
@@ -99,10 +100,28 @@ public class FTClient {
     }
 
     public void executeProg() throws IOException {
+        int isValid = 0;
         System.out.println("\n-------------------------------------------------------");
         System.out.println("File Transfer Initiated");
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
-        System.out.println("-------------------------------------------------------\n\n");
+        System.out.println("-------------------------------------------------------\n");
+
+        do {
+            userMessage = getUserInput();
+            isValid = validateCommand(userMessage);
+
+            if (isValid != 1) {
+                System.out.println("Command not found. Please try again.");
+            }
+        } while (isValid == 0);
+    }
+
+    public int validateCommand(String command) throws IOException {
+        if (command.contains("cd") || command.contains("-l") || command.contains("-g")) {
+            return 1;
+        }
+
+        return 0;
     }
         
 
