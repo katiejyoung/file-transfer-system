@@ -14,6 +14,7 @@ void acceptedConnection(int socketFD);
 int validateUserPass(int establishedConnectionFD);
 void getCommand(int establishedConnectionFD);
 char* getClientInput(int establishedConnectionFD);
+char* getCWD();
 
 int main(int argc, char *argv[]) {
     int portNumber;
@@ -104,7 +105,8 @@ void getCommand(int establishedConnectionFD) {
     printf("%s\n", clientIn); fflush(stdout);
 
     if (strcmp(clientIn, "-l") == 0) {
-        printf("List CWD\n"); fflush(stdout);
+        char *cwd = getCWD();
+        printf("Working directory: %s\n", cwd); fflush(stdout);
     }
     else if (strcmp(clientIn, "-g") == 0) {
         printf("Begin file transfer\n"); fflush(stdout);
@@ -126,6 +128,21 @@ char* getClientInput(int establishedConnectionFD) {
     if (charsRead < 0) { error("ERROR reading from socket"); };
 
     buffer[strcspn(buffer, "\n")] = 0;
+
+    return buffer;
+}
+
+char* getCWD() {
+    size_t bufLen = MAXLINE;
+    char* buffer = (char *)malloc(bufLen * sizeof(char));
+    memset(buffer, '\0', MAXLINE);
+
+    char newDir[MAXLINE];
+    if (getcwd(newDir, sizeof(newDir)) == NULL) {
+        perror("Directory error");
+    }
+
+    strcpy(buffer, newDir);
 
     return buffer;
 }
