@@ -1,7 +1,7 @@
 # file-transfer-system
 1. While in the file-transfer-system folder, type "compileall" using Bash to compile the files.
 2. To run the Server, type "Server"
-3. To run the Client, type "java ftclient"
+3. To run the Client, type "java FTClient"
 
 Testing Machine: I SSH'd to the flip servers using Visual Studio Code for testing.
 
