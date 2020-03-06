@@ -26,7 +26,7 @@ public class FTClient {
             serverInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             clientInput = new BufferedReader(new InputStreamReader(System.in));
 
-            getUserPass();
+            // getUserPass();
             executeProg();
 
             clientOutput.close();

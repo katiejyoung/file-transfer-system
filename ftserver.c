@@ -15,6 +15,8 @@ int validateUserPass(int establishedConnectionFD);
 void getCommand(int establishedConnectionFD);
 char* getClientInput(int establishedConnectionFD);
 char* getCWD();
+void changeDir(char* charArray[MAXARG], int numArgs);
+int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
 
 int main(int argc, char *argv[]) {
     int portNumber;
@@ -65,9 +67,9 @@ void acceptedConnection(int socketFD) {
 
         printf("Connected to client.\n"); fflush(stdout);
 
-        do {
-            validUserPass = validateUserPass(establishedConnectionFD);
-        } while (!validUserPass);
+        // do {
+        //     validUserPass = validateUserPass(establishedConnectionFD);
+        // } while (!validUserPass);
 
         // while ((getchar()) != '\n'); // Clear input buffer
         getCommand(establishedConnectionFD);
@@ -98,11 +100,12 @@ int validateUserPass(int establishedConnectionFD) {
 }
 
 void getCommand(int establishedConnectionFD) {
+    char* argArray[MAXARG];
     printf("Retrieving client command...\n"); fflush(stdout);
 
     // char *clientIn = getClientInput(establishedConnectionFD);
-    char *clientIn = "-l";
-    printf("%s\n", clientIn); fflush(stdout);
+    char *clientIn = "cd /nfs/stak/users/youngkat/CS_372";
+    // printf("%s\n", clientIn); fflush(stdout);
 
     if (strcmp(clientIn, "-l") == 0) {
         char *cwd = getCWD();
@@ -110,6 +113,9 @@ void getCommand(int establishedConnectionFD) {
     }
     else if (strcmp(clientIn, "-g") == 0) {
         printf("Begin file transfer\n"); fflush(stdout);
+    }
+    else if (strstr(clientIn, "cd")) {
+        int argCount = parseInput(argArray, clientIn);
     }
     else {
         printf("%s\n", clientIn); fflush(stdout);
@@ -145,4 +151,42 @@ char* getCWD() {
     strcpy(buffer, newDir);
 
     return buffer;
+}
+
+// Changes working directory to home or to specified path, if provided
+void changeDir(char* charArray[MAXARG], int numArgs) {
+    if (numArgs > 1) {
+        if (chdir(charArray[1]) != 0) {
+            perror("changeDir() failed.");
+        }
+    }
+    else {
+        printf("No path specified.\n"); fflush(stdout);
+    }
+}
+
+// Parses passed input and separates commands from space and newline character(s)
+// Places each command in passed array
+// Returns array length integer
+int parseInput(char* charArray[MAXARG], char input[MAXLINE]) {
+    char* token; // Character array variable for chunk of text
+    char* rest = input; // Copy of passed character array variable
+    int argCount = 0; // Counter for array element iteration
+    int i = 0;
+  
+    // // Separate text from whitespace characters
+    // while ((rest[i] != " ") && (i < (strlen(rest)))) {
+    //     charArray[argCount].append(rest[i]); 
+    // }
+    // argCount = argCount + 1;
+
+    // while (i < (strlen(rest)) {
+    //     charArray[argCount].append(rest[i]);
+    //     argCount = argCount + 1;
+    // }
+
+    // argCount = argCount + 1;
+
+    // Return array size
+    return argCount;
 }
