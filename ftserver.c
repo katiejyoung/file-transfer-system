@@ -71,7 +71,7 @@ void acceptedConnection(int socketFD) {
         //     validUserPass = validateUserPass(establishedConnectionFD);
         // } while (!validUserPass);
 
-        // while ((getchar()) != '\n'); // Clear input buffer
+        
         getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
@@ -103,9 +103,8 @@ void getCommand(int establishedConnectionFD) {
     char* argArray[MAXARG];
     printf("Retrieving client command...\n"); fflush(stdout);
 
-    // char *clientIn = getClientInput(establishedConnectionFD);
-    char *clientIn = "cd /nfs/stak/users/youngkat/CS_372";
-    // printf("%s\n", clientIn); fflush(stdout);
+    char *clientIn = getClientInput(establishedConnectionFD);
+    printf("%s\n", clientIn); fflush(stdout);
 
     if (strcmp(clientIn, "-l") == 0) {
         char *cwd = getCWD();
@@ -116,6 +115,7 @@ void getCommand(int establishedConnectionFD) {
     }
     else if (strstr(clientIn, "cd")) {
         int argCount = parseInput(argArray, clientIn);
+        changeDir(argArray, argCount);
     }
     else {
         printf("%s\n", clientIn); fflush(stdout);
@@ -128,12 +128,14 @@ char* getClientInput(int establishedConnectionFD) {
     // Allocate memory for string
     size_t bufLen = MAXLINE;
     char* buffer = (char *)malloc(bufLen * sizeof(char));
+    char receiveChar[MAXLINE];
     int charsRead;
 
-    charsRead = recv(establishedConnectionFD, buffer, sizeof(buffer), 0);
+    charsRead = recv(establishedConnectionFD, receiveChar, sizeof(receiveChar), 0);
     if (charsRead < 0) { error("ERROR reading from socket"); };
 
-    buffer[strcspn(buffer, "\n")] = 0;
+    receiveChar[strcspn(receiveChar, "\n")] = 0;
+    buffer = &receiveChar[0];
 
     return buffer;
 }
@@ -173,20 +175,11 @@ int parseInput(char* charArray[MAXARG], char input[MAXLINE]) {
     char* rest = input; // Copy of passed character array variable
     int argCount = 0; // Counter for array element iteration
     int i = 0;
-  
-    // // Separate text from whitespace characters
-    // while ((rest[i] != " ") && (i < (strlen(rest)))) {
-    //     charArray[argCount].append(rest[i]); 
-    // }
-    // argCount = argCount + 1;
 
-    // while (i < (strlen(rest)) {
-    //     charArray[argCount].append(rest[i]);
-    //     argCount = argCount + 1;
-    // }
+    while ((token = strtok_r(rest, " \n", &rest))) {
+        charArray[argCount] = token;
+        argCount = argCount + 1;
+    }
 
-    // argCount = argCount + 1;
-
-    // Return array size
     return argCount;
 }

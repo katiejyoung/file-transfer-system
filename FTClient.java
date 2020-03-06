@@ -115,8 +115,9 @@ public class FTClient {
                 userMessage = "";
             }
         } while (isValid == 0);
-
-        // clientOutput.println(userMessage);
+        
+        System.out.println(userMessage);
+        clientOutput.println(userMessage);
 
         if (userMessage.contains("-l")) {
             System.out.println("Printing CWD...");
