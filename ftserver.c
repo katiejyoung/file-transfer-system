@@ -14,7 +14,7 @@
 void acceptedConnection(int socketFD);
 int validateUserPass(int establishedConnectionFD);
 void getCommand(int establishedConnectionFD);
-char* getClientInput(int establishedConnectionFD);
+void getClientInput(char* newString, int establishedConnectionFD);
 void sendToClient(char* charsToSend, int establishedConnectionFD);
 char* getCWD();
 void changeDir(char* charArray[MAXARG], int numArgs);
@@ -70,12 +70,14 @@ void acceptedConnection(int socketFD) {
 
         printf("Connected to client.\n"); fflush(stdout);
 
+        validUserPass = validateUserPass(establishedConnectionFD);
+
         // do {
         //     validUserPass = validateUserPass(establishedConnectionFD);
         // } while (!validUserPass);
 
         
-        getCommand(establishedConnectionFD);
+        // getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
         establishedConnectionFD = -1;
@@ -87,16 +89,25 @@ int validateUserPass(int establishedConnectionFD) {
     char uPass[] = "monkeys3";
     char *invalidUserPass = "invalid\n";
     char *proceedConnection = "proceed\n";
-    char *nameIn = getClientInput(establishedConnectionFD);
-    char *passIn = getClientInput(establishedConnectionFD);
+
+    char nameInput[1001];
+    char passInput[1001];
+    char *nameIn = &nameInput[0];
+    getClientInput(nameIn, establishedConnectionFD);
+    char *passIn = &passInput[0];
+    getClientInput(passIn, establishedConnectionFD);
+
+    printf("FinaluName: %s, %d\n", nameIn, strlen(nameInput)); fflush(stdout);
+    printf("FinalPass: %s, %d\n", passIn, strlen(passInput)); fflush(stdout);
+
     int charsSent;
 
     if ((strcmp(nameIn, uName) != 0) || (strcmp(passIn, uPass) != 0)) {
-        charsSent = send(establishedConnectionFD, invalidUserPass, sizeof(invalidUserPass), 0);
+        // charsSent = send(establishedConnectionFD, invalidUserPass, sizeof(invalidUserPass), 0);
         return 0;
     }
     else {
-        charsSent = send(establishedConnectionFD, proceedConnection, sizeof(proceedConnection), 0);
+        // charsSent = send(establishedConnectionFD, proceedConnection, sizeof(proceedConnection), 0);
     }
 
     return 1;
@@ -106,47 +117,78 @@ void getCommand(int establishedConnectionFD) {
     char* argArray[MAXARG];
     printf("Retrieving client command...\n"); fflush(stdout);
 
-    char *clientIn = getClientInput(establishedConnectionFD);
-    int argCount = parseInput(argArray, clientIn);
+    // char *clientIn = getClientInput(establishedConnectionFD);
+    // int argCount = parseInput(argArray, clientIn);
 
-    if (strcmp(argArray[0], "-l") == 0) {
-        char *cwd = getCWD();
-        strcat(cwd, "\n");
-        sendToClient(cwd, establishedConnectionFD);
-    }
-    else if (strcmp(argArray[0], "-g") == 0) {
-        printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
-        transferFile(argArray, establishedConnectionFD);
-    }
-    else if (strstr(argArray[0], "cd")) {
-        printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
-        changeDir(argArray, argCount);
-    }
-    else {
-        printf("Invalid command.\n", clientIn); fflush(stdout);
-    }
+    // if (strcmp(argArray[0], "-l") == 0) {
+    //     char *cwd = getCWD();
+    //     strcat(cwd, "\n");
+    //     sendToClient(cwd, establishedConnectionFD);
+    // }
+    // else if (strcmp(argArray[0], "-g") == 0) {
+    //     printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
+    //     transferFile(argArray, establishedConnectionFD);
+    // }
+    // else if (strstr(argArray[0], "cd")) {
+    //     printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
+    //     changeDir(argArray, argCount);
+    // }
+    // else {
+    //     printf("Invalid command.\n"); fflush(stdout);
+    // }
 }
 
 // Reads user input from client
 // Returns input string with newline removed
-char* getClientInput(int establishedConnectionFD) {
-    // Allocate memory for string
-    size_t bufLen = MAXLINE;
-    char* buffer = (char *)malloc(bufLen * sizeof(char));
-    char receiveChar[MAXLINE];
+void getClientInput(char* newString, int establishedConnectionFD) {
+    static char receiveChar[10];
+    static char charInt[10];
     int charsRead;
+    int i = 0;
+    int j = 0;
+    int numChars = 1;
+    int isChar = 0;
 
-    charsRead = recv(establishedConnectionFD, receiveChar, sizeof(receiveChar), 0);
-    if (charsRead < 0) { error("ERROR reading from socket"); };
+    do {
+        // printf("While loop... i = %d\n", i); fflush(stdout);
+        charsRead = recv(establishedConnectionFD, receiveChar, sizeof(char), 0);
+        // printf("Character %d: %s\n", j, receiveChar); fflush(stdout);
+        if (strcmp(receiveChar, ",") == 0) {
+            isChar = 1;
+            numChars = atoi(charInt);
+            // printf("Number of characters %d\n", numChars); fflush(stdout);
+        }
+        else if (!isChar) {
+            strcat(charInt, receiveChar);
+        }
+        else if (isChar) {
+            strcat(newString, receiveChar);
+            j = j + 1; 
+        }
 
-    receiveChar[strcspn(receiveChar, "\n")] = 0;
-    buffer = &receiveChar[0];
+        if (charsRead < 0) { error("ERROR reading from socket"); };
+        i = i + 1;
+    } while(j < numChars);
 
-    return buffer;
+    newString[strcspn(newString, "\n")] = 0;
+    strcpy(charInt, "");
+
+    // printf("ReceiveString: %s\n", newString); fflush(stdout);
+}
+
+int inStreamLength(int establishedConnectionFD) {
+    char intBufferCoupReq[1];
+    memset(intBufferCoupReq, '\0', sizeof(intBufferCoupReq));
+    int *charsToReceive;
+    int clientInput = recv(establishedConnectionFD, &intBufferCoupReq, 1, 0);
+
+    charsToReceive = (int*) intBufferCoupReq;
+
+    return charsToReceive[0];
 }
 
 void sendToClient(char *charsToSend, int establishedConnectionFD) {
-    int charsSent;
+    int charsSent = 0;
 
     charsSent = send(establishedConnectionFD, charsToSend, strlen(charsToSend), 0);
     if (charsSent != strlen(charsToSend)) {

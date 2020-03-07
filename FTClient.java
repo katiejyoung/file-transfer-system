@@ -6,12 +6,17 @@ public class FTClient {
     Socket clientSocket = null;
     PrintWriter out;
     BufferedReader in;
+
+    DataInputStream serverIn;
+    DataOutputStream clientOut;
     
-    StringBuilder buildString = new StringBuilder();
     Scanner userInput = new Scanner(System.in);
     BufferedReader serverInput;
+
+    BufferedWriter clientOutput;
     BufferedReader clientInput;
-    PrintWriter clientOutput;
+
+    // PrintWriter clientOutput;
     String userMessage = "";
     String serverMessage = "";
     String userName = "";
@@ -22,12 +27,17 @@ public class FTClient {
             clientSocket = new Socket(host, port);
             System.out.println("Connected to server...\n");
 
-            clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
+            // clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
+            clientOutput = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             serverInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            // clientOut = new DataOutputStream(clientSocket.getOutputStream());
+            // serverIn = new DataInputStream(clientSocket.getInputStream());
+
             clientInput = new BufferedReader(new InputStreamReader(System.in));
 
-            // getUserPass();
-            executeProg();
+            getUserPass();
+            // executeProg();
 
             clientOutput.close();
             serverInput.close();
@@ -42,38 +52,48 @@ public class FTClient {
 
     public void getUserPass() throws IOException {
         int validUserPass = 0;
+        int length = 0;
+        int i = 0;
 
         do {
             System.out.println("Please enter your username and password.");
             System.out.print("Username: ");
-            userName = getUserInput();
+            // userName = getUserInput();
+            userName = "longusernamethatslong\n";
             System.out.print("Password: ");
-            userPass = getUserInput();
+            // userPass = getUserInput();
+            userPass = "monkeys3\n";
 
-            clientOutput.println(userName);
-            clientOutput.println(userPass);
-            serverMessage = getServerInput();
+            length = userName.length();
+            sendToServer(userName, length);
 
-            if (serverMessage.contains("invalid")) {
-                System.out.println("Invalid username/password combination. Please try again.");
-            }
-            else { validUserPass = 1; }
+            length = userPass.length();
+            sendToServer(userPass, length);
+
+            // serverMessage = getServerInput();
+
+            // if (serverMessage.contains("invalid")) {
+            //     System.out.println("Invalid username/password combination. Please try again.");
+            // }
+            // else { validUserPass = 1; }
 
             // Clear variables
             userName = "";
             userPass = "";
             serverMessage = "";
 
+            validUserPass = 1;
+
         } while (validUserPass == 0);
     }
 
     public String getUserInput() throws IOException {
+        StringBuilder buildString = new StringBuilder();
         int i = 0;
         int c;
-        buildString.setLength(0); 
         while (true) {
-            if (clientInput.ready()) { // Client input received
-                do { // Read each char and append to string builder until \n found
+            if (clientInput.ready()) {
+                do { 
                     c = clientInput.read();
                     buildString.append((char) c);
                     i++;
@@ -81,22 +101,48 @@ public class FTClient {
                 return buildString.toString();
             }
         }
+
+    }
+
+    public void sendToServer(String message, int length) throws IOException {
+        //Append length to beginning of message
+        String sendString = appendStringLength(message, length);
+        clientOutput.write(sendString);
+    }
+    
+    public String appendStringLength(String message, int length) throws IOException {
+        StringBuilder newStr = new StringBuilder(0);
+        newStr.append(length);
+        newStr.append(",");
+        newStr.append(message);
+        return newStr.toString();
     }
 
     public String getServerInput() throws IOException {
-        int i = 0;
-        int c;
-        buildString.setLength(0); 
+        int inputSize = 0;
+
         while (true) {
-            if (serverInput.ready()) { // Client input received
-                do { // Read each char and append to string builder until \n found
-                    c = serverInput.read();
-                    buildString.append((char) c);
-                    i++;
-                } while ((buildString.indexOf("\n") == -1) && i < 500);
-                return buildString.toString();
+            if (serverIn.available() > 0) {
+                inputSize = serverIn.readInt();
+                break;
             }
         }
+
+        return "String";
+
+        // int i = 0;
+        // int c;
+        // buildString.setLength(0); 
+        // while (true) {
+        //     if (serverInput.ready()) { // Client input received
+        //         do { // Read each char and append to string builder until \n found
+        //             c = serverInput.read();
+        //             buildString.append((char) c);
+        //             i++;
+        //         } while ((buildString.indexOf("\n") == -1) && i < 500);
+        //         return buildString.toString();
+        //     }
+        // }
     }
 
     public void executeProg() throws IOException {
@@ -116,7 +162,7 @@ public class FTClient {
             }
         } while (isValid == 0);
 
-        clientOutput.println(userMessage);
+        // clientOutput.println(userMessage);
 
         if (userMessage.contains("-l")) {
             serverMessage = getServerInput();
