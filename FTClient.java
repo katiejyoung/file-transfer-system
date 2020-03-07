@@ -52,7 +52,7 @@ public class FTClient {
             System.out.println("Please enter your username and password.");
             System.out.print("Username: ");
             // userName = getUserInput();
-            userName = "Admin\n";
+            userName = "longusernamethatslong\n";
             System.out.print("Password: ");
             // userPass = getUserInput();
             userPass = "monkeys3\n";
@@ -116,16 +116,33 @@ public class FTClient {
     }
 
     public String getServerInput() throws IOException {
+        StringBuilder buildString = new StringBuilder();
+        StringBuilder intString = new StringBuilder();
+        int isChar = 0;
+        int numChars = 1;
         int i = 0;
         int c;
-        StringBuilder buildString = new StringBuilder();
+        
         while (true) {
             if (serverInput.ready()) { // Client input received
                 do { // Read each char and append to string builder until \n found
                     c = serverInput.read();
-                    buildString.append((char) c);
-                    i++;
-                } while ((buildString.indexOf("\n") == -1) && i < 500);
+                    if (isChar == 0) {
+                        if (((char) c != ',')) {
+                            intString.append((char) c);
+                        }
+                        else { 
+                            isChar = 1;
+                            numChars = Integer.parseInt(intString.toString());
+                        }
+                    }
+                    else {
+                        buildString.append((char) c);
+                        i++;
+                    }
+                    
+                } while (i < numChars);
+
                 return buildString.toString();
             }
         }
