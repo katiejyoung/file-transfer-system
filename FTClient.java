@@ -142,6 +142,7 @@ public class FTClient {
     public void executeProg() throws IOException {
         int isValid = 0;
         int length = 0;
+        int fileExists = 0;
         System.out.println("\n-------------------------------------------------------");
         System.out.println("Welcome to FTClient");
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
@@ -159,7 +160,6 @@ public class FTClient {
 
         length = userMessage.length();
         sendToServer(userMessage, length);
-        // clientOutput.println(userMessage);
 
         if (userMessage.contains("-l")) {
             serverMessage = getServerInput();
@@ -167,6 +167,13 @@ public class FTClient {
         }
         else if (userMessage.contains("-g")) {
             System.out.println("Retrieving file...");
+            fileExists = receiveFile();
+            if (fileExists == 0) {
+                System.out.println("Error: File not found.");
+            }
+            else if (fileExists == 1) {
+                System.out.println("File transfer complete.");
+            }
         }
 
         serverMessage = "";
@@ -179,6 +186,13 @@ public class FTClient {
         }
 
         return 0;
+    }
+
+    public int receiveFile() throws IOException {
+        // Receive first submission, including file status or total file length
+        // If file not found, return 0
+        // If file found, loop until EOF (alternative to file length: EOF marker at beginning of last submission)
+        return 1;
     }
         
 
@@ -194,6 +208,5 @@ public class FTClient {
         String hostName = "localhost";
         int serverPort = 50023;
         FTClient client = new FTClient(hostName, serverPort); 
-
     }
 }
