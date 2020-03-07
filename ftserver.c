@@ -75,7 +75,7 @@ void acceptedConnection(int socketFD) {
             validUserPass = validateUserPass(establishedConnectionFD);
         } while (!validUserPass);
 
-        printf("Valid credentials.\n"); fflush(stdout);
+        // printf("Valid credentials.\n"); fflush(stdout);
         getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
@@ -96,8 +96,8 @@ int validateUserPass(int establishedConnectionFD) {
     char *passIn = &passInput[0];
     getClientInput(passIn, establishedConnectionFD);
 
-    printf("FinaluName: %s, %d\n", nameIn, strlen(nameInput)); fflush(stdout);
-    printf("FinalPass: %s, %d\n", passIn, strlen(passInput)); fflush(stdout);
+    // printf("FinaluName: %s, %d\n", nameIn, strlen(nameInput)); fflush(stdout);
+    // printf("FinalPass: %s, %d\n", passIn, strlen(passInput)); fflush(stdout);
 
     int charsSent;
 
@@ -118,7 +118,7 @@ int validateUserPass(int establishedConnectionFD) {
 
 void getCommand(int establishedConnectionFD) {
     char* argArray[MAXARG];
-    printf("Retrieving client command...\n"); fflush(stdout);
+    // printf("Retrieving client command...\n"); fflush(stdout);
     char clientInput[1001];
     char *clientIn = &clientInput[0];
     getClientInput(clientIn, establishedConnectionFD);
@@ -189,7 +189,7 @@ int sendToClient(char *charsToSend, int establishedConnectionFD) {
     char bufferArray[MAXLINE];
     char* buffer = &bufferArray[0];
     strcpy(bufferArray, appendLength(charsToSend));
-    printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
+    // printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
 
     charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
     if (charsSent != strlen(buffer)) {

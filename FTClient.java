@@ -63,14 +63,12 @@ public class FTClient {
             length = userPass.length();
             sendToServer(userPass, length);
 
-            System.out.println("Waiting for server...");
-
             serverMessage = getServerInput();
 
             if (serverMessage.contains("invalid")) {
                 System.out.println("Invalid username/password combination. Please try again.");
             }
-            else { System.out.println("Valid credentials."); validUserPass = 1; }
+            else { validUserPass = 1; }
 
             // Clear variables
             userName = "";
@@ -151,7 +149,7 @@ public class FTClient {
         int isValid = 0;
         int length = 0;
         System.out.println("\n-------------------------------------------------------");
-        System.out.println("File Transfer Initiated");
+        System.out.println("Welcome to FTClient");
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
         System.out.println("-------------------------------------------------------\n");
 
