@@ -76,7 +76,7 @@ void acceptedConnection(int socketFD) {
         } while (!validUserPass);
 
         printf("Valid credentials.\n"); fflush(stdout);
-        // getCommand(establishedConnectionFD);
+        getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
         establishedConnectionFD = -1;
@@ -119,26 +119,30 @@ int validateUserPass(int establishedConnectionFD) {
 void getCommand(int establishedConnectionFD) {
     char* argArray[MAXARG];
     printf("Retrieving client command...\n"); fflush(stdout);
+    char clientInput[1001];
+    char *clientIn = &clientInput[0];
+    getClientInput(clientIn, establishedConnectionFD);
 
-    // char *clientIn = getClientInput(establishedConnectionFD);
-    // int argCount = parseInput(argArray, clientIn);
+    int argCount = parseInput(argArray, clientIn);
 
-    // if (strcmp(argArray[0], "-l") == 0) {
-    //     char *cwd = getCWD();
-    //     strcat(cwd, "\n");
-    //     sendToClient(cwd, establishedConnectionFD);
-    // }
-    // else if (strcmp(argArray[0], "-g") == 0) {
-    //     printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
-    //     transferFile(argArray, establishedConnectionFD);
-    // }
-    // else if (strstr(argArray[0], "cd")) {
-    //     printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
-    //     changeDir(argArray, argCount);
-    // }
-    // else {
-    //     printf("Invalid command.\n"); fflush(stdout);
-    // }
+    if (strcmp(argArray[0], "-l") == 0) {
+        char *cwd = getCWD();
+        strcat(cwd, "\n");
+        sendToClient(cwd, establishedConnectionFD);
+    }
+    else if (strcmp(argArray[0], "-g") == 0) {
+        printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
+        transferFile(argArray, establishedConnectionFD);
+    }
+    else if (strstr(argArray[0], "cd")) {
+        printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
+        changeDir(argArray, argCount);
+    }
+    else {
+        printf("Invalid command.\n"); fflush(stdout);
+    }
+
+    strcpy(clientIn, "");
 }
 
 // Reads user input from client
@@ -185,7 +189,7 @@ int sendToClient(char *charsToSend, int establishedConnectionFD) {
     char bufferArray[MAXLINE];
     char* buffer = &bufferArray[0];
     strcpy(bufferArray, appendLength(charsToSend));
-    // printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
+    printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
 
     charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
     if (charsSent != strlen(buffer)) {

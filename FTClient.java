@@ -30,7 +30,7 @@ public class FTClient {
             clientInput = new BufferedReader(new InputStreamReader(System.in));
 
             getUserPass();
-            // executeProg();
+            executeProg();
 
             clientOutput.close();
             serverInput.close();
@@ -149,6 +149,7 @@ public class FTClient {
 
     public void executeProg() throws IOException {
         int isValid = 0;
+        int length = 0;
         System.out.println("\n-------------------------------------------------------");
         System.out.println("File Transfer Initiated");
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
@@ -164,17 +165,19 @@ public class FTClient {
             }
         } while (isValid == 0);
 
+        length = userMessage.length();
+        sendToServer(userMessage, length);
         // clientOutput.println(userMessage);
 
         if (userMessage.contains("-l")) {
             serverMessage = getServerInput();
             System.out.println("Working directory: " + serverMessage);
-            serverMessage = "";
         }
         else if (userMessage.contains("-g")) {
             System.out.println("Retrieving file...");
         }
 
+        serverMessage = "";
         userMessage = "";
     }
 
