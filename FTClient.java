@@ -5,13 +5,8 @@ import java.util.Scanner;
 public class FTClient {
     Socket clientSocket = null;
 
-    // DataInputStream serverIn;
-    // DataOutputStream clientOut;
-    
-    Scanner userInput = new Scanner(System.in);
     BufferedReader serverInput;
     BufferedWriter clientOutput;
-    // PrintWriter clientOutput;
     BufferedReader clientInput;
 
     String userMessage = "";
@@ -24,7 +19,6 @@ public class FTClient {
             clientSocket = new Socket(host, port);
             System.out.println("Connected to server...\n");
 
-            // clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
             clientOutput = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             serverInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             clientInput = new BufferedReader(new InputStreamReader(System.in));
