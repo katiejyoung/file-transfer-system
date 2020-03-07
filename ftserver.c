@@ -71,13 +71,11 @@ void acceptedConnection(int socketFD) {
 
         printf("Connected to client.\n"); fflush(stdout);
 
-        validUserPass = validateUserPass(establishedConnectionFD);
+        do {
+            validUserPass = validateUserPass(establishedConnectionFD);
+        } while (!validUserPass);
 
-        // do {
-        //     validUserPass = validateUserPass(establishedConnectionFD);
-        // } while (!validUserPass);
-
-        
+        printf("Valid credentials.\n"); fflush(stdout);
         // getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
@@ -104,12 +102,14 @@ int validateUserPass(int establishedConnectionFD) {
     int charsSent;
 
     if ((strcmp(nameIn, uName) != 0) || (strcmp(passIn, uPass) != 0)) {
-        // charsSent = send(establishedConnectionFD, invalidUserPass, strlen(invalidUserPass), 0);
         charsSent = sendToClient(invalidUserPass, establishedConnectionFD);
-        // return 0;
+        strcpy(nameIn, "");
+        strcpy(passIn, "");
+        return 0;
     }
     else {
-        // charsSent = send(establishedConnectionFD, proceedConnection, strlen(proceedConnection), 0);
+        strcpy(nameIn, "");
+        strcpy(passIn, "");
         charsSent = sendToClient(proceedConnection, establishedConnectionFD);
     }
 
@@ -175,6 +175,7 @@ void getClientInput(char* newString, int establishedConnectionFD) {
 
     newString[strcspn(newString, "\n")] = 0;
     strcpy(charInt, "");
+    strcpy(receiveChar, "");
 
     // printf("ReceiveString: %s\n", newString); fflush(stdout);
 }

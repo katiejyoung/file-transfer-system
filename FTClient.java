@@ -52,7 +52,7 @@ public class FTClient {
             System.out.println("Please enter your username and password.");
             System.out.print("Username: ");
             // userName = getUserInput();
-            userName = "longusernamethatslong\n";
+            userName = "Admin\n";
             System.out.print("Password: ");
             // userPass = getUserInput();
             userPass = "monkeys3\n";
@@ -66,7 +66,6 @@ public class FTClient {
             System.out.println("Waiting for server...");
 
             serverMessage = getServerInput();
-            System.out.println(serverMessage);
 
             if (serverMessage.contains("invalid")) {
                 System.out.println("Invalid username/password combination. Please try again.");
