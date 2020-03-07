@@ -4,19 +4,16 @@ import java.util.Scanner;
 
 public class FTClient {
     Socket clientSocket = null;
-    PrintWriter out;
-    BufferedReader in;
 
-    DataInputStream serverIn;
-    DataOutputStream clientOut;
+    // DataInputStream serverIn;
+    // DataOutputStream clientOut;
     
     Scanner userInput = new Scanner(System.in);
     BufferedReader serverInput;
-
     BufferedWriter clientOutput;
+    // PrintWriter clientOutput;
     BufferedReader clientInput;
 
-    // PrintWriter clientOutput;
     String userMessage = "";
     String serverMessage = "";
     String userName = "";
@@ -30,10 +27,6 @@ public class FTClient {
             // clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
             clientOutput = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             serverInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-            // clientOut = new DataOutputStream(clientSocket.getOutputStream());
-            // serverIn = new DataInputStream(clientSocket.getInputStream());
-
             clientInput = new BufferedReader(new InputStreamReader(System.in));
 
             getUserPass();
@@ -59,7 +52,7 @@ public class FTClient {
             System.out.println("Please enter your username and password.");
             System.out.print("Username: ");
             // userName = getUserInput();
-            userName = "longusernamethatslong\n";
+            userName = "Admin\n";
             System.out.print("Password: ");
             // userPass = getUserInput();
             userPass = "monkeys3\n";
@@ -70,12 +63,15 @@ public class FTClient {
             length = userPass.length();
             sendToServer(userPass, length);
 
-            // serverMessage = getServerInput();
+            System.out.println("Waiting for server...");
 
-            // if (serverMessage.contains("invalid")) {
-            //     System.out.println("Invalid username/password combination. Please try again.");
-            // }
-            // else { validUserPass = 1; }
+            serverMessage = getServerInput();
+            System.out.println(serverMessage);
+
+            if (serverMessage.contains("invalid")) {
+                System.out.println("Invalid username/password combination. Please try again.");
+            }
+            else { System.out.println("Valid credentials."); validUserPass = 1; }
 
             // Clear variables
             userName = "";
@@ -108,6 +104,7 @@ public class FTClient {
         //Append length to beginning of message
         String sendString = appendStringLength(message, length);
         clientOutput.write(sendString);
+        clientOutput.flush();
     }
     
     public String appendStringLength(String message, int length) throws IOException {
@@ -119,30 +116,19 @@ public class FTClient {
     }
 
     public String getServerInput() throws IOException {
-        int inputSize = 0;
-
+        int i = 0;
+        int c;
+        StringBuilder buildString = new StringBuilder();
         while (true) {
-            if (serverIn.available() > 0) {
-                inputSize = serverIn.readInt();
-                break;
+            if (serverInput.ready()) { // Client input received
+                do { // Read each char and append to string builder until \n found
+                    c = serverInput.read();
+                    buildString.append((char) c);
+                    i++;
+                } while ((buildString.indexOf("\n") == -1) && i < 500);
+                return buildString.toString();
             }
         }
-
-        return "String";
-
-        // int i = 0;
-        // int c;
-        // buildString.setLength(0); 
-        // while (true) {
-        //     if (serverInput.ready()) { // Client input received
-        //         do { // Read each char and append to string builder until \n found
-        //             c = serverInput.read();
-        //             buildString.append((char) c);
-        //             i++;
-        //         } while ((buildString.indexOf("\n") == -1) && i < 500);
-        //         return buildString.toString();
-        //     }
-        // }
     }
 
     public void executeProg() throws IOException {

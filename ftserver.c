@@ -15,7 +15,8 @@ void acceptedConnection(int socketFD);
 int validateUserPass(int establishedConnectionFD);
 void getCommand(int establishedConnectionFD);
 void getClientInput(char* newString, int establishedConnectionFD);
-void sendToClient(char* charsToSend, int establishedConnectionFD);
+int sendToClient(char* charsToSend, int establishedConnectionFD);
+char* appendLength(char* charsToSend);
 char* getCWD();
 void changeDir(char* charArray[MAXARG], int numArgs);
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
@@ -103,11 +104,13 @@ int validateUserPass(int establishedConnectionFD) {
     int charsSent;
 
     if ((strcmp(nameIn, uName) != 0) || (strcmp(passIn, uPass) != 0)) {
-        // charsSent = send(establishedConnectionFD, invalidUserPass, sizeof(invalidUserPass), 0);
-        return 0;
+        // charsSent = send(establishedConnectionFD, invalidUserPass, strlen(invalidUserPass), 0);
+        charsSent = sendToClient(invalidUserPass, establishedConnectionFD);
+        // return 0;
     }
     else {
-        // charsSent = send(establishedConnectionFD, proceedConnection, sizeof(proceedConnection), 0);
+        // charsSent = send(establishedConnectionFD, proceedConnection, strlen(proceedConnection), 0);
+        charsSent = sendToClient(proceedConnection, establishedConnectionFD);
     }
 
     return 1;
@@ -176,24 +179,36 @@ void getClientInput(char* newString, int establishedConnectionFD) {
     // printf("ReceiveString: %s\n", newString); fflush(stdout);
 }
 
-int inStreamLength(int establishedConnectionFD) {
-    char intBufferCoupReq[1];
-    memset(intBufferCoupReq, '\0', sizeof(intBufferCoupReq));
-    int *charsToReceive;
-    int clientInput = recv(establishedConnectionFD, &intBufferCoupReq, 1, 0);
+int sendToClient(char *charsToSend, int establishedConnectionFD) {
+    int charsSent = 0;
+    char bufferArray[MAXLINE];
+    char* buffer = &bufferArray[0];
+    strcpy(bufferArray, appendLength(charsToSend));
+    // printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
 
-    charsToReceive = (int*) intBufferCoupReq;
+    charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
+    if (charsSent != strlen(buffer)) {
+        printf("Not all data delivered.\n"); fflush(stdout);
+        return 0;
+    }
 
-    return charsToReceive[0];
+    return 1;
 }
 
-void sendToClient(char *charsToSend, int establishedConnectionFD) {
-    int charsSent = 0;
+char* appendLength(char *charsToSend) {
+    size_t bufLen = MAXLINE;
+    char* buffer = (char *)malloc(bufLen * sizeof(char));
+    memset(buffer, '\0', MAXLINE);
+    static char intChar[10];
+    sprintf(intChar,"%d", strlen(charsToSend));
 
-    charsSent = send(establishedConnectionFD, charsToSend, strlen(charsToSend), 0);
-    if (charsSent != strlen(charsToSend)) {
-        printf("Not all data delivered.\n"); fflush(stdout);
-    }
+    char newString[MAXLINE];
+    strcpy(newString, intChar);
+    strcat(newString, ",");
+    strcat(newString, charsToSend);
+    strcpy(buffer, newString);
+
+    return buffer;
 }
 
 char* getCWD() {
