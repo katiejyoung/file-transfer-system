@@ -93,7 +93,6 @@ public class FTClient {
 
     public void sendToServer(String message, int length) throws IOException {
         String sendString = appendStringLength(message, length);         //Append length to beginning of message
-        System.out.println(sendString);
         clientOutput.write(sendString);
         clientOutput.flush();
     }
@@ -187,16 +186,13 @@ public class FTClient {
 
             // userMessage = getUserInput();
             userMessage = "-g test.txt\n";
-            System.out.println(userMessage);
 
             length = userMessage.length();
-            System.out.println(length);
             sendToServer(userMessage, length);
             
             serverMessage = getServerInput();
-            System.out.println(serverMessage);
 
-            isValid = validateCommand(userMessage);
+            isValid = validateCommand(serverMessage);
 
             if (isValid != 1) {
                 System.out.println("Command not found. Please try again.");
@@ -215,7 +211,7 @@ public class FTClient {
             serverMessage = "";
         }
         else if (userMessage.contains("-g")) {
-            System.out.println("Retrieving file...");
+            System.out.println("Retrieving file...\n");
 
             serverMessage = getServerInput();
             if (serverMessage.contains("not found")) {
@@ -225,8 +221,6 @@ public class FTClient {
                 int fileSize = getFileSize();
                 int charCount = 0;
                 FileWriter fileWriter = new FileWriter("newFile.txt");
-
-                System.out.println(fileSize);
 
                 while (charCount < fileSize) {
                     serverMessage = getServerInput();
@@ -245,7 +239,7 @@ public class FTClient {
     }
 
     public int validateCommand(String command) throws IOException {
-        if (command.contains("cd") || command.contains("-l") || command.contains("-g")) {
+        if (command.contains("Valid")) {
             return 1;
         }
 
