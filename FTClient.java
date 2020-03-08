@@ -234,7 +234,7 @@ public class FTClient {
                 serverMessage = "";
             }
             else if (userMessage.contains("-g")) { // User requests file transfer
-                System.out.println("Retrieving file...");
+                System.out.println("Retrieving file...\n");
 
                 // Get initial server message: file found or file not found
                 serverMessage = getServerInput();
