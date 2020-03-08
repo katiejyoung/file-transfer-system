@@ -92,8 +92,8 @@ public class FTClient {
     }
 
     public void sendToServer(String message, int length) throws IOException {
-        //Append length to beginning of message
-        String sendString = appendStringLength(message, length);
+        String sendString = appendStringLength(message, length);         //Append length to beginning of message
+        System.out.println(sendString);
         clientOutput.write(sendString);
         clientOutput.flush();
     }
@@ -101,7 +101,7 @@ public class FTClient {
     public String appendStringLength(String message, int length) throws IOException {
         StringBuilder newStr = new StringBuilder(0);
         newStr.append(length);
-        newStr.append(",");
+        newStr.append("|");
         newStr.append(message);
         return newStr.toString();
     }
@@ -182,20 +182,32 @@ public class FTClient {
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
         System.out.println("-------------------------------------------------------\n");
 
-        // Loop until not cd or -l
         do {
+            userMessage = "";
+
             // userMessage = getUserInput();
             userMessage = "-g test.txt\n";
+            System.out.println(userMessage);
+
+            length = userMessage.length();
+            System.out.println(length);
+            sendToServer(userMessage, length);
+            
+            serverMessage = getServerInput();
+            System.out.println(serverMessage);
+
             isValid = validateCommand(userMessage);
 
             if (isValid != 1) {
                 System.out.println("Command not found. Please try again.");
-                userMessage = "";
             }
+
+            serverMessage = "";
+            
         } while (isValid == 0);
 
-        length = userMessage.length();
-        sendToServer(userMessage, length);
+        // length = userMessage.length();
+        // sendToServer(userMessage, length);
 
         if (userMessage.contains("-l")) {
             serverMessage = getServerInput();
@@ -222,7 +234,7 @@ public class FTClient {
                     charCount += serverMessage.length();
                     serverMessage = "";
                 }
-
+                System.out.println("Transfer complete.");
                 fileWriter.close();
             }
 
@@ -240,11 +252,6 @@ public class FTClient {
         return 0;
     }
 
-    public int receiveFile() throws IOException {
-        serverMessage = getServerInput();
-        return 1;
-    }
-        
     public static void main(String []args) throws IOException {
         // Validate argument count
         // if (args.length != 2) {

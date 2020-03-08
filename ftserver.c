@@ -76,7 +76,6 @@ void acceptedConnection(int socketFD) {
             validUserPass = validateUserPass(establishedConnectionFD);
         } while (!validUserPass);
 
-        // printf("Valid credentials.\n"); fflush(stdout);
         getCommand(establishedConnectionFD);
 
         close(establishedConnectionFD);
@@ -122,13 +121,28 @@ void getCommand(int establishedConnectionFD) {
     // printf("Retrieving client command...\n"); fflush(stdout);
     char clientInput[1001];
     char *clientIn = &clientInput[0];
-    getClientInput(clientIn, establishedConnectionFD);
+    int isValid = 0;
+    char* invalidCommand = "Error: command not found";
+    char* validCommand = "Valid command";
+
+    while (!isValid) {
+        strcpy(clientIn, "");
+        getClientInput(clientIn, establishedConnectionFD);
+
+        if ((strcmp(argArray[0], "-l") == 0) || strcmp(argArray[0], "-g") || strstr(argArray[0], "cd")) {
+            sendToClient(validCommand, establishedConnectionFD);
+            isValid = 1;
+            sleep(1);
+        }
+        else {
+            sendToClient(invalidCommand, establishedConnectionFD);
+        }
+    }
 
     int argCount = parseInput(argArray, clientIn);
 
-    // While cd or -l loop
-
     if (strcmp(argArray[0], "-l") == 0) {
+        
         char *cwd = getCWD();
         strcat(cwd, "\n");
         sendToClient(cwd, establishedConnectionFD);
@@ -142,6 +156,7 @@ void getCommand(int establishedConnectionFD) {
         changeDir(argArray, argCount);
     }
     else {
+        
         printf("Invalid command.\n"); fflush(stdout);
     }
 
@@ -163,7 +178,7 @@ void getClientInput(char* newString, int establishedConnectionFD) {
         // printf("While loop... i = %d\n", i); fflush(stdout);
         charsRead = recv(establishedConnectionFD, receiveChar, sizeof(char), 0);
         // printf("Character %d: %s\n", j, receiveChar); fflush(stdout);
-        if (strcmp(receiveChar, ",") == 0) {
+        if (strcmp(receiveChar, "|") == 0) {
             isChar = 1;
             numChars = atoi(charInt);
             // printf("Number of characters %d\n", numChars); fflush(stdout);
@@ -184,7 +199,7 @@ void getClientInput(char* newString, int establishedConnectionFD) {
     strcpy(charInt, "");
     strcpy(receiveChar, "");
 
-    // printf("ReceiveString: %s\n", newString); fflush(stdout);
+    printf("ReceiveString: %s\n", newString); fflush(stdout);
 }
 
 int sendToClient(char *charsToSend, int establishedConnectionFD) {
