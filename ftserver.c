@@ -127,6 +127,8 @@ void getCommand(int establishedConnectionFD) {
 
     int argCount = parseInput(argArray, clientIn);
 
+    // While cd or -l loop
+
     if (strcmp(argArray[0], "-l") == 0) {
         char *cwd = getCWD();
         strcat(cwd, "\n");
@@ -191,12 +193,12 @@ int sendToClient(char *charsToSend, int establishedConnectionFD) {
     char bufferArray[MAXLINE];
     char* buffer = &bufferArray[0];
     strcpy(bufferArray, appendLength(charsToSend));
-    printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
+    // printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
 
     charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
-    if (charsSent != strlen(buffer)) {
+    while (charsSent != strlen(buffer)) {
         printf("Not all data delivered.\n"); fflush(stdout);
-        return 0;
+        charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
     }
 
     strcpy(bufferArray, "");
@@ -287,27 +289,22 @@ int parseInput(char* charArray[MAXARG], char input[MAXLINE]) {
 
 void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
     FILE *plaintext;
+    char *notFound = "Error: file not found\n";
+    char *fileFound = "File exists\n";
     // Open text file and check for open success
 	plaintext = fopen(charArray[1], "r");
     int offset = 0;
 
 	if (plaintext == NULL) {
-		printf("Error: file not found\n"); fflush(stdout);
+        sendToClient(notFound, establishedConnectionFD);
 	}
     else {
-        printf("File found\n"); fflush(stdout);
-        // int sendSize = 250;
-        size_t bufsize = 250;
+        sendToClient(fileFound, establishedConnectionFD);
+
+        size_t bufsize = 500;
         char bufferArray[bufsize + 1];
         char* buffer = bufferArray;
         size_t characters;
-
-        // while (i < 2) {
-        //     memset(bufferArray, '\0', strlen(bufferArray));
-        //     characters = getline(&buffer,&bufsize,plaintext);
-        //     sendToClient(buffer, establishedConnectionFD);
-        //     i++;
-        // }
 
         fseek(plaintext, 0, SEEK_END);
         int size = ftell(plaintext);
@@ -320,82 +317,12 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
         while (i < size) {
             memset(bufferArray, '\0', strlen(bufferArray));
             characters = getline(&buffer,&bufsize,plaintext);
-            printf("%s", bufferArray); fflush(stdout);
+            // printf("%s", bufferArray); fflush(stdout);
+            sendToClient(buffer, establishedConnectionFD);
+            sleep(.25);
             i += characters;
-            // sendToClient(buffer, establishedConnectionFD);
+            // printf("I: %d, characters: %d\n", i, characters);
         }
-
-
-
-
-        // int sendSize = 250;
-        // char bufferArray[sendSize + 1];
-        // char* buffer = &bufferArray[0];
-        // size_t bufferSize;
-        // ssize_t lineSize;
-
-        // int current = 0;
-        // // memset(bufferArray, '\0', strlen(bufferArray));
-
-        // while (!feof(plaintext))
-        // {
-
-        //     // read in the line and make sure it was successful
-        //     if (fgets(bufferArray, sendSize, plaintext) != NULL)
-        //     {
-        //         // now we process the line
-        //         strcat(bufferArray, "\n");
-        //         sendToClient(buffer, establishedConnectionFD);
-        //         // printf("%s", bufferArray); fflush(stdout);
-        //         // memset(bufferArray, '\0', strlen(bufferArray));
-        //         sleep(5);
-        //     }
-
-        // }
-
-        // fseek(plaintext, 0, SEEK_SET);
-        // fread(buffer, 1, sendSize, plaintext);
-        // // bufferArray[sendSize + 1] = '\0';
-
-        // // printf("%s", bufferArray); fflush(stdout);
-        // sendToClient(buffer, establishedConnectionFD);
-        // memset(bufferArray, '\0', strlen(bufferArray));
-        
-
-        // fseek(plaintext, sendSize, SEEK_SET);
-        // fread(buffer, (sendSize + 1), 1, plaintext);
-        // bufferArray[sendSize + 1] = '\0';
-
-        // sendToClient(buffer, establishedConnectionFD);
-        // memset(bufferArray, '\0', sizeof(bufferArray));
-
-        // printf("%s", bufferArray); fflush(stdout);
-
-        // fseek(plaintext, (2 * sendSize), SEEK_SET);
-        // fread(buffer, sendSize, 1, plaintext);
-
-        // sendToClient(buffer, establishedConnectionFD);
-        // strcpy(bufferArray, "");
-
-        // printf("%s", bufferArray); fflush(stdout);
-
-        // while((lineSize = read(plaintext, bufferArray, bufferSize)) > 0)
-        //     printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
-        //     strcpy(bufferArray, "");
-        // }
-
-        // while(lineSize >= 0) {
-        //     lineSize = getline(&buffer, &bufferSize, plaintext);
-        //     // sendToClient(buffer, establishedConnectionFD);
-        //     // strcpy(bufferArray, appendLength(charsToSend));
-        //     printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
-
-        //     // charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
-        //     // if (charsSent != strlen(buffer)) {
-        //     //     printf("Not all data delivered.\n"); fflush(stdout);
-        //     //     return 0;
-        //     // }
-        // }
 
         // free(buffer);
         // buffer = NULL;

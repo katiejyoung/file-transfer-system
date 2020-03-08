@@ -134,7 +134,14 @@ public class FTClient {
                     
                 } while (i < numChars);
 
-                return buildString.toString();
+                if (i == numChars) {
+                    return buildString.toString();
+                }
+                else {
+                    continue;
+                }
+
+                
             }
         }
     }
@@ -170,7 +177,6 @@ public class FTClient {
     public void executeProg() throws IOException {
         int isValid = 0;
         int length = 0;
-        int fileExists = 0;
         System.out.println("\n-------------------------------------------------------");
         System.out.println("Welcome to FTClient");
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
@@ -178,7 +184,7 @@ public class FTClient {
 
         do {
             // userMessage = getUserInput();
-            userMessage = "-g Austen.txt\n";
+            userMessage = "-g test.txt\n";
             isValid = validateCommand(userMessage);
 
             if (isValid != 1) {
@@ -193,23 +199,33 @@ public class FTClient {
         if (userMessage.contains("-l")) {
             serverMessage = getServerInput();
             System.out.println("Working directory: " + serverMessage);
+            serverMessage = "";
         }
         else if (userMessage.contains("-g")) {
             System.out.println("Retrieving file...");
-            int fileSize = getFileSize();
-            int charCount = 0;
 
-            System.out.println(fileSize);
-            // fileExists = receiveFile();
-            // fileExists = receiveFile();
-            // fileExists = receiveFile();
-
-            if (fileExists == 0) {
+            serverMessage = getServerInput();
+            if (serverMessage.contains("not found")) {
                 System.out.println("Error: File not found.");
             }
-            else if (fileExists == 1) {
-                System.out.println("File transfer complete.");
+            else {
+                int fileSize = getFileSize();
+                int charCount = 0;
+                FileWriter fileWriter = new FileWriter("newFile.txt");
+
+                System.out.println(fileSize);
+
+                while (charCount < fileSize) {
+                    serverMessage = getServerInput();
+                    // System.out.println(serverMessage);
+                    fileWriter.write(serverMessage);
+                    charCount += serverMessage.length();
+                    serverMessage = "";
+                }
+
+                fileWriter.close();
             }
+
         }
 
         serverMessage = "";
@@ -225,15 +241,10 @@ public class FTClient {
     }
 
     public int receiveFile() throws IOException {
-        // Receive first submission, including file status or total file length
-        // If file not found, return 0
-        // If file found, loop until EOF (alternative to file length: EOF marker at beginning of last submission)
         serverMessage = getServerInput();
-        System.out.println(serverMessage);
         return 1;
     }
         
-
     public static void main(String []args) throws IOException {
         // Validate argument count
         // if (args.length != 2) {
