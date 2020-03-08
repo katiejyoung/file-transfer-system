@@ -185,7 +185,7 @@ public class FTClient {
             userMessage = "";
 
             // userMessage = getUserInput();
-            userMessage = "-g test.txt\n";
+            userMessage = "-l\n";
 
             length = userMessage.length();
             sendToServer(userMessage, length);

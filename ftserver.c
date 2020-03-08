@@ -70,7 +70,7 @@ void acceptedConnection(int socketFD) {
         if (establishedConnectionFD < 0) error("ERROR on accept");
         validUserPass = 0; // Reset username/password validation tracker
 
-        printf("Connected to client.\n"); fflush(stdout);
+        printf("Connected to client...\n\n"); fflush(stdout);
 
         do {
             validUserPass = validateUserPass(establishedConnectionFD);
@@ -115,38 +115,42 @@ int validateUserPass(int establishedConnectionFD) {
 
 void getCommand(int establishedConnectionFD) {
     char* argArray[MAXARG];
-    // printf("Retrieving client command...\n"); fflush(stdout);
     char clientInput[1001];
     char *clientIn = &clientInput[0];
     int isValid = 0;
     char* invalidCommand = "Error: command not found";
     char* validCommand = "Valid command";
+    int argCount;
 
     while (!isValid) {
         strcpy(clientIn, "");
         getClientInput(clientIn, establishedConnectionFD);
 
-        if ((strcmp(argArray[0], "-l") == 0) || strcmp(argArray[0], "-g") || strstr(argArray[0], "cd")) {
+        argCount = parseInput(argArray, clientIn);
+
+        if ((strcmp(argArray[0], "-l") == 0) || (strcmp(argArray[0], "-g") == 0) || (strstr(argArray[0], "cd") == 0)) {
             sendToClient(validCommand, establishedConnectionFD);
             isValid = 1;
             sleep(1);
         }
         else {
             sendToClient(invalidCommand, establishedConnectionFD);
+            argArray[0] = '\0';
+            sleep(1);
         }
     }
 
-    int argCount = parseInput(argArray, clientIn);
-
     if (strcmp(argArray[0], "-l") == 0) {
-        
+        printf("Sending current working directory.\n"); fflush(stdout);
         char *cwd = getCWD();
         strcat(cwd, "\n");
         sendToClient(cwd, establishedConnectionFD);
+        printf("Working directory sent.\n\n"); fflush(stdout);
     }
     else if (strcmp(argArray[0], "-g") == 0) {
         printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
         transferFile(argArray, establishedConnectionFD);
+        printf("Transfer complete.\n\n"); fflush(stdout);
     }
     else if (strstr(argArray[0], "cd")) {
         printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
@@ -196,7 +200,7 @@ void getClientInput(char* newString, int establishedConnectionFD) {
     strcpy(charInt, "");
     strcpy(receiveChar, "");
 
-    printf("ReceiveString: %s\n", newString); fflush(stdout);
+    // printf("ReceiveString: %s\n", newString); fflush(stdout);
 }
 
 int sendToClient(char *charsToSend, int establishedConnectionFD) {
@@ -274,6 +278,9 @@ void changeDir(char* charArray[MAXARG], int numArgs) {
         if (chdir(charArray[1]) != 0) {
             perror("changeDir() failed.");
         }
+        else {
+            printf("Directory change complete.\n"); fflush(stdout);
+        }
     }
     else {
         printf("No path specified.\n"); fflush(stdout);
@@ -321,7 +328,6 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
         fseek(plaintext, 0, SEEK_SET);
         int i = 0;
 
-        printf("File size: %d\n", size);
         sendFileSize(size, establishedConnectionFD);
 
         while (i < size) {
