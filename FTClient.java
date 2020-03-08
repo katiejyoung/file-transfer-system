@@ -248,7 +248,8 @@ public class FTClient {
                     System.out.println("Please enter a file name");
 
                     do {
-                        fileName = getUserInput();
+                        fileName = getUserInput(); // Get file name from user
+                        fileName = fileName.replace("\n", "").replace("\r", ""); // Remove trailing newlines from input
 
                         // Verify that file doesn't already exist
                         File file = new File(fileName);
