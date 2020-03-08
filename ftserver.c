@@ -22,7 +22,6 @@ char* getCWD();
 void changeDir(char* charArray[MAXARG], int numArgs);
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
 void transferFile(char* charArray[MAXARG], int establishedConnectionFD);
-int lengthOf(char charArray[251]);
 
 int main(int argc, char *argv[]) {
     int portNumber;
@@ -324,20 +323,7 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
             // printf("I: %d, characters: %d\n", i, characters);
         }
 
-        // free(buffer);
-        // buffer = NULL;
-
         fclose(plaintext);
     }
     
 }
-
-int lengthOf(char charArray[251]) {
-        int i = 0;
-
-        while (charArray[i] != '\0') {
-            i++;
-        }
-
-        return i;
-    }

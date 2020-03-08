@@ -182,6 +182,7 @@ public class FTClient {
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
         System.out.println("-------------------------------------------------------\n");
 
+        // Loop until not cd or -l
         do {
             // userMessage = getUserInput();
             userMessage = "-g test.txt\n";
@@ -217,7 +218,6 @@ public class FTClient {
 
                 while (charCount < fileSize) {
                     serverMessage = getServerInput();
-                    // System.out.println(serverMessage);
                     fileWriter.write(serverMessage);
                     charCount += serverMessage.length();
                     serverMessage = "";
