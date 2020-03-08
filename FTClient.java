@@ -119,7 +119,7 @@ public class FTClient {
                 do { // Read each char and append to string builder until \n found
                     c = serverInput.read();
                     if (isChar == 0) {
-                        if (((char) c != ',')) {
+                        if (((char) c != '|')) {
                             intString.append((char) c);
                         }
                         else { 
@@ -139,6 +139,34 @@ public class FTClient {
         }
     }
 
+    public int getFileSize() throws IOException {
+        StringBuilder intString = new StringBuilder();
+        int isChar = 0;
+        int numChars = 1;
+        int c;
+        
+        while (true) {
+            if (serverInput.ready()) { // Client input received
+                do { // Read each char and append to string builder until \n found
+                    c = serverInput.read();
+                    if (isChar == 0) {
+                        if (((char) c != '|')) {
+                            intString.append((char) c);
+                        }
+                        else { 
+                            isChar = 1;
+                            numChars = Integer.parseInt(intString.toString());
+                            break;
+                        }
+                    }
+                    
+                } while (isChar == 0);
+
+                return numChars;
+            }
+        }
+    }
+
     public void executeProg() throws IOException {
         int isValid = 0;
         int length = 0;
@@ -149,7 +177,8 @@ public class FTClient {
         System.out.println("-------------------------------------------------------\n");
 
         do {
-            userMessage = getUserInput();
+            // userMessage = getUserInput();
+            userMessage = "-g Austen.txt\n";
             isValid = validateCommand(userMessage);
 
             if (isValid != 1) {
@@ -167,7 +196,14 @@ public class FTClient {
         }
         else if (userMessage.contains("-g")) {
             System.out.println("Retrieving file...");
-            fileExists = receiveFile();
+            int fileSize = getFileSize();
+            int charCount = 0;
+
+            System.out.println(fileSize);
+            // fileExists = receiveFile();
+            // fileExists = receiveFile();
+            // fileExists = receiveFile();
+
             if (fileExists == 0) {
                 System.out.println("Error: File not found.");
             }
@@ -192,6 +228,8 @@ public class FTClient {
         // Receive first submission, including file status or total file length
         // If file not found, return 0
         // If file found, loop until EOF (alternative to file length: EOF marker at beginning of last submission)
+        serverMessage = getServerInput();
+        System.out.println(serverMessage);
         return 1;
     }
         
@@ -206,7 +244,7 @@ public class FTClient {
         // String hostName = args[0];
         // int serverPort = Integer.parseInt(args[1]);
         String hostName = "localhost";
-        int serverPort = 50023;
+        int serverPort = 60123;
         FTClient client = new FTClient(hostName, serverPort); 
     }
 }
