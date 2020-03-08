@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     // Set up the address struct for this process (the server)
 	memset((char *)&serverAddress, '\0', sizeof(serverAddress)); // Clear out the address struct
 	// portNumber = atoi(argv[1]); // Get the port number, convert to an integer from a string
-    portNumber = 60123;
+    portNumber = 60124;
 	serverAddress.sin_family = AF_INET; // Create a network-capable socket
 	serverAddress.sin_port = htons(portNumber); // Store the port number
 	serverAddress.sin_addr.s_addr = INADDR_ANY; // Any address is allowed for connection to this process
@@ -95,9 +95,6 @@ int validateUserPass(int establishedConnectionFD) {
     getClientInput(nameIn, establishedConnectionFD);
     char *passIn = &passInput[0];
     getClientInput(passIn, establishedConnectionFD);
-
-    // printf("FinaluName: %s, %d\n", nameIn, strlen(nameInput)); fflush(stdout);
-    // printf("FinalPass: %s, %d\n", passIn, strlen(passInput)); fflush(stdout);
 
     int charsSent;
 
@@ -207,7 +204,6 @@ int sendToClient(char *charsToSend, int establishedConnectionFD) {
     char bufferArray[MAXLINE];
     char* buffer = &bufferArray[0];
     strcpy(bufferArray, appendLength(charsToSend));
-    // printf("Buffer: %s, %d\n", bufferArray, strlen(bufferArray)); fflush(stdout);
 
     charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
     while (charsSent != strlen(buffer)) {
@@ -331,11 +327,9 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
         while (i < size) {
             memset(bufferArray, '\0', strlen(bufferArray));
             characters = getline(&buffer,&bufsize,plaintext);
-            // printf("%s", bufferArray); fflush(stdout);
             sendToClient(buffer, establishedConnectionFD);
             sleep(.25);
             i += characters;
-            // printf("I: %d, characters: %d\n", i, characters);
         }
 
         fclose(plaintext);

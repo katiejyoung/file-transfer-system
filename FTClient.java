@@ -202,9 +202,6 @@ public class FTClient {
             
         } while (isValid == 0);
 
-        // length = userMessage.length();
-        // sendToServer(userMessage, length);
-
         if (userMessage.contains("-l")) {
             serverMessage = getServerInput();
             System.out.println("Working directory: " + serverMessage);
@@ -256,7 +253,7 @@ public class FTClient {
         // String hostName = args[0];
         // int serverPort = Integer.parseInt(args[1]);
         String hostName = "localhost";
-        int serverPort = 60123;
+        int serverPort = 60124;
         FTClient client = new FTClient(hostName, serverPort); 
     }
 }
