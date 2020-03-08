@@ -5,7 +5,7 @@
 3. To run the Client, type "java FTClient <HOST> <PORT>"
 4. You will first be prompted for a username and password. Type the username "Admin" and the password "yaynetworking".
 5. You have the option to change the directory of the server ("cd new-path", or "cd home" to return to the original folder), list current working directory ("-l"), 
-    or retrieve a specified file ("-g test.txt" - or another valid text file).
+    or retrieve a specified file ("-g test.txt" - or another valid text file). When requesting a file, you will be prompted until you submit a unique file name for saving on the client side.
     Note: The cd and -l commands will loop back for user input. The only way to terminate the program from the client side is with a file transfer or ctrl+c. 
     This made the most sense to me, as "-l" is helpful to determine where to "cd" to and "cd" is only useful if the user is able to get files from different places.
 6. The Server can be terminated using ctrl+c.

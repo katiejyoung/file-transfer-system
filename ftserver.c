@@ -1,4 +1,8 @@
 
+// Katie Young
+// CS 372, Program 2: File Transport System
+// Last modified: 3/8/2020
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

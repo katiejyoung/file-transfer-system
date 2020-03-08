@@ -1,6 +1,11 @@
+// Katie Young
+// CS 372, Program 2: File Transport System
+// Last modified: 3/8/2020
+
 import java.net.*;
 import java.io.*;
 import java.util.Scanner;
+import java.io.File;
 
 public class FTClient {
     Socket clientSocket = null;
@@ -13,6 +18,7 @@ public class FTClient {
     String serverMessage = "";
     String userName = "";
     String userPass = "";
+    String fileName = "";
 
     public FTClient(String host, int port) {
         try {
@@ -238,7 +244,22 @@ public class FTClient {
                 else {
                     int fileSize = getFileSize(); // Get file size from server
                     int charCount = 0;
-                    FileWriter fileWriter = new FileWriter("newFile.txt"); // Open file for writing
+
+                    System.out.println("Please enter a file name");
+
+                    do {
+                        fileName = getUserInput();
+
+                        // Verify that file doesn't already exist
+                        File file = new File(fileName);
+                        if(file.exists()) {
+                            System.out.println("File already exists. Please choose a new value.");
+                            fileName = ""; // Clear variable
+                        }
+                        else { break; }
+                    } while (true);
+                    
+                    FileWriter fileWriter = new FileWriter(fileName); // Open file for writing
 
                     // Loop until EOF and save data to file
                     while (charCount < fileSize) {
