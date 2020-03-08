@@ -49,7 +49,7 @@ public class FTClient {
             userName = "Admin\n";
             System.out.print("Password: ");
             // userPass = getUserInput();
-            userPass = "monkeys3\n";
+            userPass = "yaynetworking\n";
 
             length = userName.length();
             sendToServer(userName, length);
@@ -254,15 +254,13 @@ public class FTClient {
 
     public static void main(String []args) throws IOException {
         // Validate argument count
-        // if (args.length != 2) {
-        //     System.err.println("Incorrect number of arguments");
-        //     System.exit(1);
-        // }
+        if (args.length != 2) {
+            System.err.println("Incorrect number of arguments");
+            System.exit(1);
+        }
 
-        // String hostName = args[0];
-        // int serverPort = Integer.parseInt(args[1]);
-        String hostName = "localhost";
-        int serverPort = 60124;
+        String hostName = args[0];
+        int serverPort = Integer.parseInt(args[1]);
         FTClient client = new FTClient(hostName, serverPort); 
     }
 }

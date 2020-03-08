@@ -1,7 +1,7 @@
 # file-transfer-system
 1. While in the file-transfer-system folder, type "compileall" using Bash to compile the files.
-2. To run the Server, type "Server"
-3. To run the Client, type "java FTClient"
+2. To run the Server, type "Server <PORT>"
+3. To run the Client, type "java FTClient <HOST> <PORT>"
 4. You have the option to change the directory of the server ("cd new-path"), list CWD ("-l"), or retrieve a specified file ("-g test.txt")
     Note that a file that is transfered will have the same word count as the original
 

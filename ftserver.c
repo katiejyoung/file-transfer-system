@@ -30,12 +30,11 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in serverAddress;
 
     // Check argument length
-    //if (argc != 1) { fprintf(stderr,"too few arguments\n", argv[0]); exit(2); }
+    if (argc != 2) { fprintf(stderr,"too few arguments\n", argv[0]); exit(2); }
 
     // Set up the address struct for this process (the server)
 	memset((char *)&serverAddress, '\0', sizeof(serverAddress)); // Clear out the address struct
-	// portNumber = atoi(argv[1]); // Get the port number, convert to an integer from a string
-    portNumber = 60124;
+	portNumber = atoi(argv[1]); // Get the port number, convert to an integer from a string
 	serverAddress.sin_family = AF_INET; // Create a network-capable socket
 	serverAddress.sin_port = htons(portNumber); // Store the port number
 	serverAddress.sin_addr.s_addr = INADDR_ANY; // Any address is allowed for connection to this process
@@ -85,7 +84,7 @@ void acceptedConnection(int socketFD) {
 
 int validateUserPass(int establishedConnectionFD) {
     char uName[] = "Admin";
-    char uPass[] = "monkeys3";
+    char uPass[] = "yaynetworking";
     char *invalidUserPass = "invalid\n";
     char *proceedConnection = "proceed\n";
 
