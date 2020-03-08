@@ -185,7 +185,7 @@ public class FTClient {
             userMessage = "";
 
             // userMessage = getUserInput();
-            userMessage = "-l\n";
+            userMessage = "-g badfile.txt\n";
 
             length = userMessage.length();
             sendToServer(userMessage, length);
@@ -208,7 +208,7 @@ public class FTClient {
             serverMessage = "";
         }
         else if (userMessage.contains("-g")) {
-            System.out.println("Retrieving file...\n");
+            System.out.println("Retrieving file...");
 
             serverMessage = getServerInput();
             if (serverMessage.contains("not found")) {

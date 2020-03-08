@@ -141,7 +141,7 @@ void getCommand(int establishedConnectionFD) {
     }
 
     if (strcmp(argArray[0], "-l") == 0) {
-        printf("Sending current working directory.\n"); fflush(stdout);
+        printf("Sending current working directory...\n"); fflush(stdout);
         char *cwd = getCWD();
         strcat(cwd, "\n");
         sendToClient(cwd, establishedConnectionFD);
@@ -150,15 +150,10 @@ void getCommand(int establishedConnectionFD) {
     else if (strcmp(argArray[0], "-g") == 0) {
         printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
         transferFile(argArray, establishedConnectionFD);
-        printf("Transfer complete.\n\n"); fflush(stdout);
     }
     else if (strstr(argArray[0], "cd")) {
         printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
         changeDir(argArray, argCount);
-    }
-    else {
-        
-        printf("Invalid command.\n"); fflush(stdout);
     }
 
     strcpy(clientIn, "");
@@ -308,12 +303,12 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
     FILE *plaintext;
     char *notFound = "Error: file not found\n";
     char *fileFound = "File exists\n";
-    // Open text file and check for open success
 	plaintext = fopen(charArray[1], "r");
     int offset = 0;
 
 	if (plaintext == NULL) {
         sendToClient(notFound, establishedConnectionFD);
+        printf("Transfer unsuccessful: file not found.\n\n"); fflush(stdout);
 	}
     else {
         sendToClient(fileFound, establishedConnectionFD);
@@ -339,6 +334,7 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
         }
 
         fclose(plaintext);
+        printf("Transfer complete.\n\n"); fflush(stdout);
     }
     
 }
