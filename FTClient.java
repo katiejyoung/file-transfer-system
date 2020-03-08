@@ -78,6 +78,7 @@ public class FTClient {
         StringBuilder buildString = new StringBuilder();
         int i = 0;
         int c;
+        System.out.print(": ");
         while (true) {
             if (clientInput.ready()) {
                 do { 
@@ -181,62 +182,66 @@ public class FTClient {
         System.out.println("Send \'cd\' followed by a new path to change directory.\nSend \'-l\' to list current working directory.\nEnter \'-g\' followed by a file to initiate file transmission.");
         System.out.println("-------------------------------------------------------\n");
 
-        do {
-            userMessage = "";
+        while (true) {
+            isValid = 0;
+            do {
+                userMessage = "";
 
-            // userMessage = getUserInput();
-            userMessage = "cd baddir\n";
+                userMessage = getUserInput();
 
-            length = userMessage.length();
-            sendToServer(userMessage, length);
-            
-            serverMessage = getServerInput();
+                length = userMessage.length();
+                sendToServer(userMessage, length);
+                
+                serverMessage = getServerInput();
 
-            isValid = validateCommand(serverMessage);
+                isValid = validateCommand(serverMessage);
 
-            if (isValid != 1) {
-                System.out.println("Command not found. Please try again.");
-            }
-
-            serverMessage = "";
-            
-        } while (isValid == 0);
-
-        if (userMessage.contains("-l")) {
-            serverMessage = getServerInput();
-            System.out.println("Working directory: " + serverMessage);
-            serverMessage = "";
-        }
-        else if (userMessage.contains("-g")) {
-            System.out.println("Retrieving file...");
-
-            serverMessage = getServerInput();
-            if (serverMessage.contains("not found")) {
-                System.out.println("Error: File not found.");
-            }
-            else {
-                int fileSize = getFileSize();
-                int charCount = 0;
-                FileWriter fileWriter = new FileWriter("newFile.txt");
-
-                while (charCount < fileSize) {
-                    serverMessage = getServerInput();
-                    fileWriter.write(serverMessage);
-                    charCount += serverMessage.length();
-                    serverMessage = "";
+                if (isValid != 1) {
+                    System.out.println("Command not found. Please try again.");
                 }
-                System.out.println("Transfer complete.");
-                fileWriter.close();
+
+                serverMessage = "";
+                
+            } while (isValid == 0);
+
+            if (userMessage.contains("-l")) {
+                serverMessage = getServerInput();
+                System.out.println("Working directory: " + serverMessage);
+                serverMessage = "";
             }
-        }
-        else if (userMessage.contains("cd")) {
-            serverMessage = getServerInput();
+            else if (userMessage.contains("-g")) {
+                System.out.println("Retrieving file...");
 
-            System.out.println(serverMessage);
-        }
+                serverMessage = getServerInput();
+                if (serverMessage.contains("not found")) {
+                    System.out.println("Error: File not found.");
+                }
+                else {
+                    int fileSize = getFileSize();
+                    int charCount = 0;
+                    FileWriter fileWriter = new FileWriter("newFile.txt");
 
-        serverMessage = "";
-        userMessage = "";
+                    while (charCount < fileSize) {
+                        serverMessage = getServerInput();
+                        fileWriter.write(serverMessage);
+                        charCount += serverMessage.length();
+                        serverMessage = "";
+                    }
+                    System.out.println("Transfer complete.");
+                    fileWriter.close();
+                }
+                break;
+            }
+            else if (userMessage.contains("cd")) {
+                serverMessage = getServerInput();
+
+                System.out.println(serverMessage);
+            }
+
+            serverMessage = "";
+            userMessage = "";
+        }
+        
     }
 
     public int validateCommand(String command) throws IOException {

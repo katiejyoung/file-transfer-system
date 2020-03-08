@@ -19,7 +19,7 @@ int sendToClient(char* charsToSend, int establishedConnectionFD);
 char* appendLength(char* charsToSend);
 int sendFileSize(int fileSize, int establishedConnectionFD);
 char* getCWD();
-int changeDir(char* charArray[MAXARG], int numArgs);
+int changeDir(char* charArray[MAXARG], int numArgs, char* charsToSend);
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
 void transferFile(char* charArray[MAXARG], int establishedConnectionFD);
 
@@ -120,52 +120,59 @@ void getCommand(int establishedConnectionFD) {
     int isValid = 0;
     char* invalidCommand = "Error: command not found";
     char* validCommand = "Valid command";
+    char* home = getCWD();
     int argCount;
 
-    while (!isValid) {
+    while (1) {
+        isValid = 0;
+        while (!isValid) {
+            strcpy(clientIn, "");
+            getClientInput(clientIn, establishedConnectionFD);
+
+            argCount = parseInput(argArray, clientIn);
+
+            if ((strcmp(argArray[0], "-l") == 0) || (strcmp(argArray[0], "-g") == 0) || (strcmp(argArray[0], "cd") == 0)) {
+                sendToClient(validCommand, establishedConnectionFD);
+                isValid = 1;
+                sleep(1);
+            }
+            else {
+                sendToClient(invalidCommand, establishedConnectionFD);
+                argArray[0] = '\0';
+                sleep(1);
+            }
+        }
+
+        if (strcmp(argArray[0], "-l") == 0) {
+            printf("Sending current working directory...\n"); fflush(stdout);
+            char *cwd = getCWD();
+            strcat(cwd, "\n");
+            sendToClient(cwd, establishedConnectionFD);
+            printf("Working directory sent.\n\n"); fflush(stdout);
+        }
+        else if (strcmp(argArray[0], "-g") == 0) {
+            printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
+            transferFile(argArray, establishedConnectionFD);
+            break;
+        }
+        else if (strcmp(argArray[0], "cd") == 0) {
+            printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
+            char* success = "Directory change complete.\n";
+            char* failure = "Failed to change directory.\n";
+            int dirChange = changeDir(argArray, argCount, home);
+
+            if (dirChange) {
+                sendToClient(success, establishedConnectionFD);
+            }
+            else {
+                sendToClient(failure, establishedConnectionFD);
+            }
+        }
+
         strcpy(clientIn, "");
-        getClientInput(clientIn, establishedConnectionFD);
-
-        argCount = parseInput(argArray, clientIn);
-
-        if ((strcmp(argArray[0], "-l") == 0) || (strcmp(argArray[0], "-g") == 0) || (strcmp(argArray[0], "cd") == 0)) {
-            sendToClient(validCommand, establishedConnectionFD);
-            isValid = 1;
-            sleep(1);
-        }
-        else {
-            sendToClient(invalidCommand, establishedConnectionFD);
-            argArray[0] = '\0';
-            sleep(1);
-        }
     }
 
-    if (strcmp(argArray[0], "-l") == 0) {
-        printf("Sending current working directory...\n"); fflush(stdout);
-        char *cwd = getCWD();
-        strcat(cwd, "\n");
-        sendToClient(cwd, establishedConnectionFD);
-        printf("Working directory sent.\n\n"); fflush(stdout);
-    }
-    else if (strcmp(argArray[0], "-g") == 0) {
-        printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
-        transferFile(argArray, establishedConnectionFD);
-    }
-    else if (strcmp(argArray[0], "cd") == 0) {
-        printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
-        char* success = "Directory change complete.\n";
-        char* failure = "Failed to change directory.\n";
-        int dirChange = changeDir(argArray, argCount);
-
-        if (dirChange) {
-            sendToClient(success, establishedConnectionFD);
-        }
-        else {
-            sendToClient(failure, establishedConnectionFD);
-        }
-    }
-
-    strcpy(clientIn, "");
+   
 }
 
 // Reads user input from client
@@ -277,13 +284,20 @@ char* getCWD() {
 }
 
 // Changes working directory to home or to specified path, if provided
-int changeDir(char* charArray[MAXARG], int numArgs) {
+int changeDir(char* charArray[MAXARG], int numArgs, char* charsToSend) {
+    char* dirChange;
     if (numArgs > 1) {
-        if (chdir(charArray[1]) != 0) {
+        if (strcmp(charArray[1], "home") == 0) {
+            dirChange = charsToSend;
+        }
+        else {
+            dirChange = charArray[1];
+        }
+        if (chdir(dirChange) != 0) {
             perror("Directory change failed");
         }
         else {
-            printf("Directory change complete.\n"); fflush(stdout);
+            printf("Directory change complete.\n\n"); fflush(stdout);
             return 1;
         }
     }
