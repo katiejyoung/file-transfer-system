@@ -19,7 +19,7 @@ int sendToClient(char* charsToSend, int establishedConnectionFD);
 char* appendLength(char* charsToSend);
 int sendFileSize(int fileSize, int establishedConnectionFD);
 char* getCWD();
-void changeDir(char* charArray[MAXARG], int numArgs);
+int changeDir(char* charArray[MAXARG], int numArgs);
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]);
 void transferFile(char* charArray[MAXARG], int establishedConnectionFD);
 
@@ -128,7 +128,7 @@ void getCommand(int establishedConnectionFD) {
 
         argCount = parseInput(argArray, clientIn);
 
-        if ((strcmp(argArray[0], "-l") == 0) || (strcmp(argArray[0], "-g") == 0) || (strstr(argArray[0], "cd") == 0)) {
+        if ((strcmp(argArray[0], "-l") == 0) || (strcmp(argArray[0], "-g") == 0) || (strcmp(argArray[0], "cd") == 0)) {
             sendToClient(validCommand, establishedConnectionFD);
             isValid = 1;
             sleep(1);
@@ -151,9 +151,18 @@ void getCommand(int establishedConnectionFD) {
         printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
         transferFile(argArray, establishedConnectionFD);
     }
-    else if (strstr(argArray[0], "cd")) {
+    else if (strcmp(argArray[0], "cd") == 0) {
         printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
-        changeDir(argArray, argCount);
+        char* success = "Directory change complete.\n";
+        char* failure = "Failed to change directory.\n";
+        int dirChange = changeDir(argArray, argCount);
+
+        if (dirChange) {
+            sendToClient(success, establishedConnectionFD);
+        }
+        else {
+            sendToClient(failure, establishedConnectionFD);
+        }
     }
 
     strcpy(clientIn, "");
@@ -268,18 +277,21 @@ char* getCWD() {
 }
 
 // Changes working directory to home or to specified path, if provided
-void changeDir(char* charArray[MAXARG], int numArgs) {
+int changeDir(char* charArray[MAXARG], int numArgs) {
     if (numArgs > 1) {
         if (chdir(charArray[1]) != 0) {
-            perror("changeDir() failed.");
+            perror("Directory change failed");
         }
         else {
             printf("Directory change complete.\n"); fflush(stdout);
+            return 1;
         }
     }
     else {
         printf("No path specified.\n"); fflush(stdout);
     }
+
+    return 0;
 }
 
 // Parses passed input and separates commands from space and newline character(s)

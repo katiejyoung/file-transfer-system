@@ -185,7 +185,7 @@ public class FTClient {
             userMessage = "";
 
             // userMessage = getUserInput();
-            userMessage = "-g badfile.txt\n";
+            userMessage = "cd baddir\n";
 
             length = userMessage.length();
             sendToServer(userMessage, length);
@@ -228,7 +228,11 @@ public class FTClient {
                 System.out.println("Transfer complete.");
                 fileWriter.close();
             }
+        }
+        else if (userMessage.contains("cd")) {
+            serverMessage = getServerInput();
 
+            System.out.println(serverMessage);
         }
 
         serverMessage = "";
