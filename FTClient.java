@@ -44,12 +44,10 @@ public class FTClient {
 
         do {
             System.out.println("Please enter your username and password.");
-            System.out.print("Username: ");
-            // userName = getUserInput();
-            userName = "Admin\n";
-            System.out.print("Password: ");
-            // userPass = getUserInput();
-            userPass = "yaynetworking\n";
+            System.out.print("Username");
+            userName = getUserInput();
+            System.out.print("Password");
+            userPass = getUserInput();
 
             length = userName.length();
             sendToServer(userName, length);
