@@ -12,6 +12,7 @@
 
 Note: I was unable to test this program properly using the Jane Austen text, due to the special characters (double quotes specifically) not translating well in Linux (dos2unix didn't fix this).
     I have attached a text file with more total characters than the Austen text, which has transfered properly during testing.
+Note: I prepended the data length to each transmission, using '|' as a separator. Any file that has this character will break the program.
 
 Testing Machine: I SSH'd to the flip servers using Visual Studio Code for testing.
 

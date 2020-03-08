@@ -25,7 +25,6 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD);
 
 int main(int argc, char *argv[]) {
     int portNumber;
-
     int listenSocketFD, establishedConnectionFD;
     struct sockaddr_in serverAddress;
 
@@ -49,14 +48,14 @@ int main(int argc, char *argv[]) {
 		exit(2);
 	}
 
-    listen(listenSocketFD, 5); // Flip the socket on - it can now receive up to 5 connections
-    acceptedConnection(listenSocketFD);
+    listen(listenSocketFD, 10); // Flip the socket on - it can now receive up to 10 connections
+    acceptedConnection(listenSocketFD); // Continue to program
 
-    close(listenSocketFD);
+    close(listenSocketFD); // Close port connection
     return 0;
 }
 
-// Accepts new connection and calls appropriate functions based on user input
+// Accepts new connection and calls appropriate functions
 void acceptedConnection(int socketFD) {
     socklen_t sizeOfClientInfo;
     struct sockaddr_in clientAddress;
@@ -71,32 +70,36 @@ void acceptedConnection(int socketFD) {
 
         printf("Connected to client...\n\n"); fflush(stdout);
 
+        // Validate username and password
         do {
             validUserPass = validateUserPass(establishedConnectionFD);
         } while (!validUserPass);
 
-        getCommand(establishedConnectionFD);
+        getCommand(establishedConnectionFD); // Move on to command portion of program
 
-        close(establishedConnectionFD);
+        close(establishedConnectionFD); // Close client connection
         establishedConnectionFD = -1;
     }
 }
 
+// Validates username and password
+// Returns 1 if combination is valid and 0 if not
 int validateUserPass(int establishedConnectionFD) {
     char uName[] = "Admin";
     char uPass[] = "yaynetworking";
     char *invalidUserPass = "invalid\n";
     char *proceedConnection = "proceed\n";
-
     char nameInput[1001];
     char passInput[1001];
     char *nameIn = &nameInput[0];
-    getClientInput(nameIn, establishedConnectionFD);
     char *passIn = &passInput[0];
-    getClientInput(passIn, establishedConnectionFD);
-
     int charsSent;
 
+    // Get username and password info from client
+    getClientInput(nameIn, establishedConnectionFD);
+    getClientInput(passIn, establishedConnectionFD);
+
+    // Compare new values with valid credentials and respond to client accordingly
     if ((strcmp(nameIn, uName) != 0) || (strcmp(passIn, uPass) != 0)) {
         charsSent = sendToClient(invalidUserPass, establishedConnectionFD);
         strcpy(nameIn, "");
@@ -112,6 +115,7 @@ int validateUserPass(int establishedConnectionFD) {
     return 1;
 }
 
+// Performs logic for command portion of program (e.g. "cd", "-l", "-g")
 void getCommand(int establishedConnectionFD) {
     char* argArray[MAXARG];
     char clientInput[1001];
@@ -122,28 +126,33 @@ void getCommand(int establishedConnectionFD) {
     char* home = getCWD();
     int argCount;
 
+    // Loop until file transfer requested
     while (1) {
-        isValid = 0;
+        isValid = 0; // Reset client input validation boolean
+
+        // Gather and validate client input
         while (!isValid) {
             strcpy(clientIn, "");
-            getClientInput(clientIn, establishedConnectionFD);
+            getClientInput(clientIn, establishedConnectionFD); // Get input from client
 
-            argCount = parseInput(argArray, clientIn);
+            argCount = parseInput(argArray, clientIn); // Separate input into command and context
 
+            // Validate command and respond accordingly
             if ((strcmp(argArray[0], "-l") == 0) || (strcmp(argArray[0], "-g") == 0) || (strcmp(argArray[0], "cd") == 0)) {
                 sendToClient(validCommand, establishedConnectionFD);
                 isValid = 1;
-                sleep(1);
             }
             else {
                 sendToClient(invalidCommand, establishedConnectionFD);
-                argArray[0] = '\0';
-                sleep(1);
+                argArray[0] = '\0'; // Reset argument array if command is invalid
             }
         }
 
+        // Perform appropriate actions based on user command
         if (strcmp(argArray[0], "-l") == 0) {
             printf("Sending current working directory...\n"); fflush(stdout);
+
+            // Get current working directory and send to client
             char *cwd = getCWD();
             strcat(cwd, "\n");
             sendToClient(cwd, establishedConnectionFD);
@@ -151,6 +160,8 @@ void getCommand(int establishedConnectionFD) {
         }
         else if (strcmp(argArray[0], "-g") == 0) {
             printf("Begin file transfer of: %s\n", argArray[1]); fflush(stdout);
+
+            // Transfer file to client, if it exists
             transferFile(argArray, establishedConnectionFD);
             break;
         }
@@ -158,8 +169,9 @@ void getCommand(int establishedConnectionFD) {
             printf("Changing to directory: %s\n", argArray[1]); fflush(stdout);
             char* success = "Directory change complete.\n";
             char* failure = "Failed to change directory.\n";
-            int dirChange = changeDir(argArray, argCount, home);
 
+            // Attempt directory change and respond with success or failure notice
+            int dirChange = changeDir(argArray, argCount, home);
             if (dirChange) {
                 sendToClient(success, establishedConnectionFD);
             }
@@ -168,7 +180,7 @@ void getCommand(int establishedConnectionFD) {
             }
         }
 
-        strcpy(clientIn, "");
+        strcpy(clientIn, ""); // Clear variable
     }
 
    
@@ -186,87 +198,99 @@ void getClientInput(char* newString, int establishedConnectionFD) {
     int isChar = 0;
 
     do {
-        // printf("While loop... i = %d\n", i); fflush(stdout);
+        // Receive data from client
         charsRead = recv(establishedConnectionFD, receiveChar, sizeof(char), 0);
-        // printf("Character %d: %s\n", j, receiveChar); fflush(stdout);
+
+        // Separate prepended int from data using '|' as separator
         if (strcmp(receiveChar, "|") == 0) {
             isChar = 1;
-            numChars = atoi(charInt);
-            // printf("Number of characters %d\n", numChars); fflush(stdout);
+            numChars = atoi(charInt); // Convert final numeric char array to an int
         }
         else if (!isChar) {
-            strcat(charInt, receiveChar);
+            strcat(charInt, receiveChar); // Concatenate numeric values to char array
         }
         else if (isChar) {
-            strcat(newString, receiveChar);
+            strcat(newString, receiveChar); // Concatenate data to char array pointer
             j = j + 1; 
         }
 
         if (charsRead < 0) { error("ERROR reading from socket"); };
         i = i + 1;
-    } while(j < numChars);
+    } while(j < numChars); // Loop until end of data (according to passed length)
 
+    // Remove trailing newlines and clear variables
     newString[strcspn(newString, "\n")] = 0;
     strcpy(charInt, "");
     strcpy(receiveChar, "");
 
-    // printf("ReceiveString: %s\n", newString); fflush(stdout);
 }
 
+// Send data with appended length to client
+// Returns 1 when delivery successful
 int sendToClient(char *charsToSend, int establishedConnectionFD) {
     int charsSent = 0;
     char bufferArray[MAXLINE];
     char* buffer = &bufferArray[0];
+
+    // prepend length to char array
     strcpy(bufferArray, appendLength(charsToSend));
 
+    // Send data to client and loop until all data sent
     charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
     while (charsSent != strlen(buffer)) {
         printf("Not all data delivered.\n"); fflush(stdout);
         charsSent = send(establishedConnectionFD, bufferArray, strlen(bufferArray), 0);
     }
 
-    strcpy(bufferArray, "");
+    strcpy(bufferArray, ""); // Clear variable
     return 1;
 }
 
+// Prepends length of char array to data
+// Returns new char array with appended length
 char* appendLength(char *charsToSend) {
     size_t bufLen = MAXLINE;
     char* buffer = (char *)malloc(bufLen * sizeof(char));
     memset(buffer, '\0', MAXLINE);
     static char intChar[10];
-    sprintf(intChar,"%d", strlen(charsToSend));
+    sprintf(intChar,"%d", strlen(charsToSend)); // Convert length from int to char array
 
     char newString[MAXLINE];
-    strcpy(newString, intChar);
-    strcat(newString, "|");
-    strcat(newString, charsToSend);
-    strcpy(buffer, newString);
+    strcpy(newString, intChar); // Add length
+    strcat(newString, "|"); // Add separator
+    strcat(newString, charsToSend); // Add data
+    strcpy(buffer, newString); // Save to returned variable
 
-    return buffer;
+    return buffer; // Return new char array
 }
 
+// Function specific to file transfer
+// Sends size of entire file, rather than size of individual message
+// Returns 0 if data delivery fails, and 1 if it is successful
 int sendFileSize(int fileSize, int establishedConnectionFD) {
     size_t bufLen = MAXLINE;
     char* buffer = (char *)malloc(bufLen * sizeof(char));
     memset(buffer, '\0', MAXLINE);
     static char intChar[10];
-    sprintf(intChar,"%d", fileSize);
+    sprintf(intChar,"%d", fileSize); // Convert file length from int to char array
 
     char newString[MAXLINE];
-    strcpy(newString, intChar);
-    strcat(newString, "|");
-    strcpy(buffer, newString);
+    strcpy(newString, intChar); // Add length
+    strcat(newString, "|"); // Add separator
+    strcpy(buffer, newString); // Add data
 
+    // Send data to client and output error message if not all data sent
     int charsSent = send(establishedConnectionFD, buffer, strlen(buffer), 0);
     if (charsSent != strlen(buffer)) {
         printf("Not all data delivered.\n"); fflush(stdout);
         return 0;
     }
 
-    strcpy(buffer, "");
+    strcpy(buffer, ""); // Clear variable
     return 1;
 }
 
+// Returns string with current working directory
 char* getCWD() {
     size_t bufLen = MAXLINE;
     char* buffer = (char *)malloc(bufLen * sizeof(char));
@@ -283,15 +307,19 @@ char* getCWD() {
 }
 
 // Changes working directory to home or to specified path, if provided
+// Returns 1 if successful, 0 if unsuccessful
 int changeDir(char* charArray[MAXARG], int numArgs, char* charsToSend) {
     char* dirChange;
-    if (numArgs > 1) {
-        if (strcmp(charArray[1], "home") == 0) {
+    if (numArgs > 1) { // Verify that a path is passed
+        // Evaluate which path to use
+        if (strcmp(charArray[1], "home") == 0) { 
             dirChange = charsToSend;
         }
         else {
             dirChange = charArray[1];
         }
+
+        // Attempt to redirect to new path
         if (chdir(dirChange) != 0) {
             perror("Directory change failed");
         }
@@ -309,13 +337,14 @@ int changeDir(char* charArray[MAXARG], int numArgs, char* charsToSend) {
 
 // Parses passed input and separates commands from space and newline character(s)
 // Places each command in passed array
-// Returns array length integer
+// Returns array length
 int parseInput(char* charArray[MAXARG], char input[MAXLINE]) {
-    char* token; // Character array variable for chunk of text
-    char* rest = input; // Copy of passed character array variable
-    int argCount = 0; // Counter for array element iteration
+    char* token; 
+    char* rest = input;
+    int argCount = 0; 
     int i = 0;
 
+    // Separates char array by space and newline chars
     while ((token = strtok_r(rest, " \n", &rest))) {
         charArray[argCount] = token;
         argCount = argCount + 1;
@@ -324,32 +353,36 @@ int parseInput(char* charArray[MAXARG], char input[MAXLINE]) {
     return argCount;
 }
 
+// Sends file contents to client
 void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
     FILE *plaintext;
     char *notFound = "Error: file not found\n";
-    char *fileFound = "File exists\n";
-	plaintext = fopen(charArray[1], "r");
+    char *fileFound = "File exists\n";	
     int offset = 0;
 
+    // Attempt to open file and validate
+    plaintext = fopen(charArray[1], "r");
 	if (plaintext == NULL) {
-        sendToClient(notFound, establishedConnectionFD);
+        sendToClient(notFound, establishedConnectionFD); // Notify client if file not found
         printf("Transfer unsuccessful: file not found.\n\n"); fflush(stdout);
 	}
     else {
-        sendToClient(fileFound, establishedConnectionFD);
+        sendToClient(fileFound, establishedConnectionFD); // Notify client if file found
 
         size_t bufsize = 500;
         char bufferArray[bufsize + 1];
         char* buffer = bufferArray;
         size_t characters;
 
+        // Find file size
         fseek(plaintext, 0, SEEK_END);
         int size = ftell(plaintext);
         fseek(plaintext, 0, SEEK_SET);
         int i = 0;
 
-        sendFileSize(size, establishedConnectionFD);
+        sendFileSize(size, establishedConnectionFD); // Send initial message containing file size
 
+        // Loop until all data sent
         while (i < size) {
             memset(bufferArray, '\0', strlen(bufferArray));
             characters = getline(&buffer,&bufsize,plaintext);
@@ -358,7 +391,7 @@ void transferFile(char* charArray[MAXARG], int establishedConnectionFD) {
             i += characters;
         }
 
-        fclose(plaintext);
+        fclose(plaintext); // Close file
         printf("Transfer complete.\n\n"); fflush(stdout);
     }
     
