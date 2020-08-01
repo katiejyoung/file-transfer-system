@@ -1,4 +1,4 @@
-# file-transfer-system
+# File Transfer System
 Design and implement a simple file transfer system, i.e., create a file transfer-server and a file-transfer client. Note: ftserver must be written in C/C++ and ftclient must be written in Java or Python. Your program should be able to send a complete text file.
 
 ### To run the program:
